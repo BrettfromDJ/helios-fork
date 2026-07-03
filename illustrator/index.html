@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Prompt Illustrator — animated vector marks</title>
+<style>
+  :root {
+    --ink: #171717;
+    --muted: #6b6b6b;
+    --line: #e4e4e4;
+    --bg: #ffffff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 48px 32px 8px;
+  }
+  h1 { font-size: 22px; font-weight: 600; margin: 0 0 6px; letter-spacing: -0.01em; }
+  header p { color: var(--muted); margin: 0; font-size: 14px; line-height: 1.5; }
+  .controls {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 24px 32px 8px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .controls input[type="text"] {
+    flex: 1 1 340px;
+    font: inherit;
+    font-size: 15px;
+    padding: 10px 14px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    outline: none;
+    color: var(--ink);
+  }
+  .controls input[type="text"]:focus { border-color: var(--ink); }
+  .controls select {
+    font: inherit;
+    font-size: 13px;
+    padding: 10px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+  }
+  button {
+    font: inherit;
+    font-size: 13px;
+    padding: 10px 16px;
+    border: 1px solid var(--ink);
+    background: var(--ink);
+    color: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  button.ghost {
+    background: #fff;
+    color: var(--ink);
+    border-color: var(--line);
+  }
+  button:hover { opacity: 0.85; }
+  .grid {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 40px 48px;
+  }
+  .card { border-top: 1px solid var(--line); padding-top: 18px; }
+  .card .label { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+  .card .sub { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
+  .card .stage { width: 100%; aspect-ratio: 1; }
+  .card .stage svg { width: 100%; height: 100%; display: block; }
+  .card .actions { display: flex; gap: 8px; }
+  .card .actions button {
+    font-size: 12px;
+    padding: 6px 10px;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  .card .actions button:hover { border-color: var(--ink); opacity: 1; }
+  footer {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 32px 56px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #ededed; --muted: #9a9a9a; --line: #2c2c2c; --bg: #111111; }
+    .controls select, button.ghost, .card .actions button { background: var(--bg); }
+    .controls input[type="text"] { background: var(--bg); }
+    button { color: #111; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Prompt Illustrator</h1>
+  <p>Type a concept and get minimal, subtly animated vector marks — dashed connectors, hubs, satellites, orbits. Export as animated SVG or Lottie JSON.</p>
+</header>
+
+<div class="controls">
+  <input id="prompt" type="text" value="reach influential audiences"
+         placeholder="e.g. real-time conversations, own the moment, precise targeting…">
+  <select id="archetype">
+    <option value="auto">auto archetype</option>
+  </select>
+  <button id="generate">Generate</button>
+  <button id="shuffle" class="ghost" title="Same prompt, new variations">Shuffle</button>
+</div>
+
+<div class="grid" id="grid"></div>
+
+<footer>
+  Illustrations are deterministic per prompt + seed. Motion respects <code>prefers-reduced-motion</code>.
+  Lottie export is a minimal shape-layer document (tested with lottie-web).
+</footer>
+
+<script>
+"use strict";
+
+/* ============================================================
+ * Seeded randomness
+ * ============================================================ */
+function xmur3(str) {
+  let h = 1779033703 ^ str.length;
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+    h = (h << 13) | (h >>> 19);
+  }
+  return function () {
+    h = Math.imul(h ^ (h >>> 16), 2246822507);
+    h = Math.imul(h ^ (h >>> 13), 3266489909);
+    return (h ^= h >>> 16) >>> 0;
+  };
+}
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function makeRng(prompt, seed) {
+  const next = mulberry32(xmur3(prompt.trim().toLowerCase() + "::" + seed)());
+  const r = {
+    rand: next,
+    range: (a, b) => a + next() * (b - a),
+    int: (a, b) => Math.floor(a + next() * (b - a + 1)),
+    pick: (arr) => arr[Math.floor(next() * arr.length)],
+    chance: (p) => next() < p,
+  };
+  return r;
+}
+
+/* ============================================================
+ * Scene model
+ *
+ * A scene is a flat list of primitives drawn on a 400x400 canvas.
+ *   line    {x1,y1,x2,y2, dashed, march}
+ *   circle  {x,y,r, filled, mask}         mask: paint bg to hide lines under it
+ *   ring    {x,y,r, dashed, march}        never filled, never masks
+ *   square  {x,y,s, filled, rot, mask}
+ *   path    {d, verts:[[x,y]...], closed}  stroke-only polyline
+ *   dot     {x,y,r}                        small filled circle
+ * Primitives may carry anim: "pulse" | "floaty" | "blink" and delay (seconds).
+ * Render order: line/ring < path < square/circle/dot, in insertion order.
+ * ============================================================ */
+
+const W = 400, H = 400;
+const STROKE = 1.6;
+const DASH = [5, 4];
+
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+/* ============================================================
+ * Archetypes
+ * ============================================================ */
+
+const ARCHETYPES = {
+
+  /* Horizontal dashed rows, each with endpoint marks and a ringed hub. */
+  flow(r) {
+    const p = [];
+    const rows = r.int(3, 3);
+    for (let i = 0; i < rows; i++) {
+      const y = 115 + i * 85 + r.range(-8, 8);
+      const x1 = r.range(60, 85), x2 = r.range(315, 340);
+      p.push({ type: "line", x1, y1: y, x2, y2: y, dashed: true, march: true });
+      p.push({ type: "square", x: x1, y, s: 9, filled: r.chance(0.55), mask: true });
+      p.push({ type: "square", x: x2, y, s: 9, filled: r.chance(0.55), mask: true });
+      const hx = lerp(x1, x2, r.range(0.28, 0.72));
+      p.push({ type: "circle", x: hx, y, r: r.range(15, 18), filled: false, mask: true });
+      if (r.chance(0.7)) p.push({ type: "dot", x: hx, y, r: 4.5, anim: "pulse", delay: i * 0.8 });
+      else p.push({ type: "circle", x: hx, y, r: 4.5, filled: false, mask: true, anim: "pulse", delay: i * 0.8 });
+    }
+    return p;
+  },
+
+  /* Satellites fanning into one large ringed hub. */
+  converge(r) {
+    const p = [];
+    const hx = r.range(255, 292), hy = r.range(255, 298);
+    const R = r.range(20, 26);
+    const n = r.int(4, 6);
+    const a0 = 95, a1 = 215;
+    for (let i = 0; i < n; i++) {
+      const ang = (a0 + (i / (n - 1)) * (a1 - a0) + r.range(-7, 7)) * Math.PI / 180;
+      const dist = r.range(150, 235);
+      // direction from the hub: 95° ≈ straight up, 215° ≈ down-left
+      const vx = Math.cos(ang), vy = -Math.sin(ang);
+      const px = Math.min(365, Math.max(38, hx + vx * dist));
+      const py = Math.min(365, Math.max(38, hy + vy * dist));
+      const ex = hx + vx * (R + 3), ey = hy + vy * (R + 3);
+      p.push({ type: "line", x1: px, y1: py, x2: ex, y2: ey, dashed: true, march: true });
+      const kind = r.pick(["fsq", "fsq", "ocirc", "ocirc", "osq"]);
+      const anim = { anim: "floaty", delay: r.range(0, 2.5) };
+      if (kind === "fsq") p.push({ type: "square", x: px, y: py, s: 11, filled: true, mask: true, ...anim });
+      else if (kind === "osq") p.push({ type: "square", x: px, y: py, s: 10, filled: false, mask: true, ...anim });
+      else p.push({ type: "circle", x: px, y: py, r: 5, filled: false, mask: true, ...anim });
+      if (r.chance(0.3)) {
+        const t = r.range(0.45, 0.7);
+        p.push({ type: "circle", x: lerp(px, ex, t), y: lerp(py, ey, t), r: 4, filled: false, mask: true });
+      }
+    }
+    p.push({ type: "circle", x: hx, y: hy, r: R, filled: false, mask: true });
+    p.push({ type: "square", x: hx, y: hy, s: 11, filled: true, anim: "pulse", delay: 0.4 });
+    return p;
+  },
+
+  /* A boxed core radiating rays: dashed one side, solid the other. */
+  burst(r) {
+    const p = [];
+    const cx = r.range(185, 215), cy = r.range(190, 210);
+    const s = r.range(42, 52);
+    const nL = r.int(3, 5), nR = r.int(3, 5);
+    const ray = (side, i, n) => {
+      const spread = r.range(50, 72);
+      const base = side < 0 ? 180 : 0;
+      const ang = (base + lerp(-spread, spread, n === 1 ? 0.5 : i / (n - 1)) + r.range(-4, 4)) * Math.PI / 180;
+      const vx = Math.cos(ang), vy = Math.sin(ang);
+      const start = s / 2 + 6, len = r.range(95, 150);
+      const x1 = cx + vx * start, y1 = cy + vy * start * 0.9;
+      const x2 = cx + vx * (start + len), y2 = cy + vy * (start + len) * 0.9;
+      p.push({ type: "line", x1, y1, x2, y2, dashed: side < 0, march: side < 0 });
+      if (side > 0 && r.chance(0.6)) {
+        const t = r.range(0.25, 0.55);
+        p.push({ type: "dot", x: lerp(x1, x2, t), y: lerp(y1, y2, t), r: 3, anim: "blink", delay: r.range(0, 3) });
+      }
+    };
+    for (let i = 0; i < nL; i++) ray(-1, i, nL);
+    for (let i = 0; i < nR; i++) ray(1, i, nR);
+    p.push({ type: "square", x: cx, y: cy, s, filled: false, mask: true });
+    p.push({ type: "dot", x: cx, y: cy, r: 5, anim: "pulse", delay: 0 });
+    return p;
+  },
+
+  /* Diamond core with corner nodes, wrapped in overlapping dashed orbits. */
+  orbit(r) {
+    const p = [];
+    const cx = 200 + r.range(-6, 6), cy = 202 + r.range(-6, 6);
+    const s = r.range(60, 74);
+    const half = (s * Math.SQRT2) / 2;
+    const nOrbits = r.int(3, 4);
+    for (let i = 0; i < nOrbits; i++) {
+      const ang = (i / nOrbits) * Math.PI * 2 + r.range(-0.3, 0.3) + 0.5;
+      const d = r.range(44, 60);
+      p.push({
+        type: "ring",
+        x: cx + Math.cos(ang) * d, y: cy + Math.sin(ang) * d,
+        r: r.range(42, 56), dashed: true, march: true,
+      });
+    }
+    p.push({ type: "square", x: cx, y: cy, s, filled: false, rot: 45, mask: true });
+    const corners = [
+      [cx, cy - half], [cx + half, cy], [cx, cy + half], [cx - half, cy],
+    ];
+    corners.forEach(([x, y], i) => {
+      if (i === 2) p.push({ type: "dot", x, y, r: 4.5 });
+      else p.push({ type: "circle", x, y, r: 4.5, filled: false, mask: true });
+    });
+    p.push({ type: "square", x: cx, y: cy, s: 9, filled: true, anim: "pulse", delay: 0.2 });
+    return p;
+  },
+
+  /* Concentric target with spokes reaching diamonds on a dashed outer ring. */
+  target(r) {
+    const p = [];
+    const cx = 200 + r.range(-8, 8), cy = 200 + r.range(-8, 8);
+    const R = r.range(85, 102);
+    p.push({ type: "ring", x: cx, y: cy, r: R, dashed: true, march: true });
+    p.push({ type: "ring", x: cx, y: cy, r: R * r.range(0.5, 0.58), dashed: false });
+    p.push({ type: "ring", x: cx, y: cy, r: R * r.range(0.26, 0.32), dashed: false });
+    const n = r.int(2, 3);
+    const base = r.range(0, 360);
+    for (let i = 0; i < n; i++) {
+      const ang = (base + (i / n) * 360 + r.range(-14, 14)) * Math.PI / 180;
+      const vx = Math.cos(ang), vy = Math.sin(ang);
+      const x1 = cx + vx * R * 0.55, y1 = cy + vy * R * 0.55;
+      const x2 = cx + vx * R, y2 = cy + vy * R;
+      p.push({ type: "line", x1, y1, x2, y2, dashed: false });
+      p.push({ type: "square", x: x2, y: y2, s: 9, filled: false, rot: 45, mask: true, anim: "floaty", delay: i * 0.9 });
+    }
+    p.push({ type: "dot", x: cx, y: cy, r: 5, anim: "pulse", delay: 0 });
+    return p;
+  },
+
+  /* A dashed lattice cascading toward an open intake box. */
+  cascade(r) {
+    const p = [];
+    const cx = 200 + r.range(-5, 5);
+    const y1 = r.range(80, 95), y2 = y1 + r.range(50, 60);
+    const spread1 = r.range(80, 100), spread2 = spread1 * r.range(0.45, 0.6);
+    const row1 = [cx - spread1, cx, cx + spread1].map(x => [x + r.range(-8, 8), y1 + r.range(-4, 4)]);
+    const row2 = [cx - spread2, cx, cx + spread2].map(x => [x + r.range(-6, 6), y2 + r.range(-4, 4)]);
+    const link = (a, b) => p.push({ type: "line", x1: a[0], y1: a[1], x2: b[0], y2: b[1], dashed: true, march: true });
+    link(row1[0], row1[1]); link(row1[1], row1[2]);
+    link(row1[0], row2[0]); link(row1[1], row2[1]); link(row1[2], row2[2]);
+    if (r.chance(0.6)) link(row1[1], row2[0]);
+    if (r.chance(0.6)) link(row1[1], row2[2]);
+    link(row2[0], row2[1]); link(row2[1], row2[2]);
+    [...row1, ...row2].forEach(([x, y], i) =>
+      p.push({ type: "circle", x, y, r: 4.5, filled: false, mask: true, anim: "floaty", delay: i * 0.45 }));
+    // open-top intake box with flared lips
+    const by = r.range(295, 315), bs = r.range(42, 50);
+    const L = cx - bs / 2, R2 = cx + bs / 2, T = by - bs / 2, B = by + bs / 2;
+    const flare = bs * 0.42;
+    p.push({ type: "path", verts: [[L - flare * 0.8, T - flare], [L, T], [L, B], [R2, B], [R2, T], [R2 + flare * 0.8, T - flare]], closed: false });
+    p.push({ type: "square", x: cx, y: by + 2, s: 10, filled: true, rot: 45, anim: "pulse", delay: 0.3 });
+    return p;
+  },
+
+  /* Loose lattice of mixed marks with one ringed hub. */
+  network(r) {
+    const p = [];
+    const cols = 3, rows = 3;
+    const nodes = [];
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        if (r.chance(0.1)) continue;
+        nodes.push({
+          x: 80 + i * 120 + r.range(-22, 22),
+          y: 80 + j * 120 + r.range(-22, 22),
+          i, j,
+        });
+      }
+    }
+    for (const a of nodes) {
+      for (const b of nodes) {
+        const near = (Math.abs(a.i - b.i) + Math.abs(a.j - b.j)) === 1;
+        if (near && (a.i < b.i || a.j < b.j) && r.chance(0.75)) {
+          p.push({ type: "line", x1: a.x, y1: a.y, x2: b.x, y2: b.y, dashed: r.chance(0.8), march: true });
+        }
+      }
+    }
+    const hub = r.pick(nodes);
+    nodes.forEach((nd, k) => {
+      const anim = { anim: "floaty", delay: k * 0.5 };
+      if (nd === hub) {
+        p.push({ type: "circle", x: nd.x, y: nd.y, r: 15, filled: false, mask: true });
+        p.push({ type: "dot", x: nd.x, y: nd.y, r: 4.5, anim: "pulse", delay: 0 });
+      } else {
+        const kind = r.pick(["fsq", "ocirc", "ocirc", "dot", "osq"]);
+        if (kind === "fsq") p.push({ type: "square", x: nd.x, y: nd.y, s: 10, filled: true, mask: true, ...anim });
+        else if (kind === "osq") p.push({ type: "square", x: nd.x, y: nd.y, s: 10, filled: false, mask: true, ...anim });
+        else if (kind === "dot") p.push({ type: "dot", x: nd.x, y: nd.y, r: 4, ...anim });
+        else p.push({ type: "circle", x: nd.x, y: nd.y, r: 5, filled: false, mask: true, ...anim });
+      }
+    });
+    return p;
+  },
+};
+
+/* Keyword routing: substring scoring against the prompt. */
+const KEYWORDS = {
+  flow: ["conversation", "chat", "message", "flow", "stream", "exchange", "journey", "timeline", "sequence", "real-time", "realtime", "process", "dialog"],
+  converge: ["reach", "audience", "connect", "gather", "collect", "aggregate", "hub", "inbound", "attract", "follower", "influen", "acquir", "lead"],
+  burst: ["launch", "broadcast", "announc", "moment", "publish", "spread", "amplif", "signal", "viral", "news", "release", "ship", "own the"],
+  orbit: ["attention", "engag", "orbit", "resonat", "overlap", "embrace", "brand", "loyal", "community", "earn"],
+  target: ["target", "precis", "focus", "keyword", "aim", "filter", "segment", "match", "relevan", "intent"],
+  cascade: ["business", "scale", "grow", "build", "structur", "hierarch", "organiz", "distribut", "funnel", "convert", "sales", "pipeline", "budget"],
+  network: ["network", "mesh", "team", "collab", "integrat", "ecosystem", "platform", "partner", "global"],
+};
+
+function pickArchetype(prompt, r, forced) {
+  if (forced && forced !== "auto") return forced;
+  const lower = prompt.toLowerCase();
+  let best = null, bestScore = 0;
+  for (const [name, words] of Object.entries(KEYWORDS)) {
+    let score = 0;
+    for (const w of words) if (lower.includes(w)) score++;
+    if (score > bestScore) { bestScore = score; best = name; }
+  }
+  return best || r.pick(Object.keys(ARCHETYPES));
+}
+
+/* ============================================================
+ * SVG renderer
+ * ============================================================ */
+
+const BASE_CSS = `
+  .stroke { stroke: currentColor; stroke-width: ${STROKE}; fill: none; }
+  .fill { fill: currentColor; }
+  .bg { fill: var(--illo-bg, #fff); }
+  .dashline { stroke-dasharray: ${DASH[0]} ${DASH[1]}; }
+`;
+const ANIM_CSS = `
+  .march { animation: illo-march 6s linear infinite; }
+  .pulse { animation: illo-pulse 3.2s ease-in-out infinite; transform-origin: center; transform-box: fill-box; }
+  .floaty { animation: illo-float 4.2s ease-in-out infinite alternate; }
+  .blink { animation: illo-blink 3.6s ease-in-out infinite; }
+  .appear { animation: illo-appear .5s ease-out backwards; }
+  @keyframes illo-march { to { stroke-dashoffset: -${DASH[0] + DASH[1]}; } }
+  @keyframes illo-pulse { 50% { transform: scale(1.22); } }
+  @keyframes illo-float { to { transform: translateY(-3.5px); } }
+  @keyframes illo-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+  @keyframes illo-appear { from { opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .march, .pulse, .floaty, .blink, .appear { animation: none; }
+  }
+`;
+
+function esc(v) { return (+v).toFixed(2).replace(/\.00$/, ""); }
+
+function primToSvg(el, idx, animated) {
+  const anim = [];
+  let style = "";
+  if (animated) {
+    if (el.anim) anim.push(el.anim);
+    anim.push("appear");
+    const delays = [];
+    if (el.anim) delays.push(`${(el.delay || 0).toFixed(2)}s`);
+    delays.push(`${(idx * 0.05).toFixed(2)}s`);
+    style = ` style="animation-delay:${delays.join(",")}"`;
+  }
+  const cls = (extra) => ` class="${[extra, ...anim].filter(Boolean).join(" ")}"${style}`;
+
+  switch (el.type) {
+    case "line": {
+      const c = "stroke" + (el.dashed ? " dashline" : "") + (el.dashed && el.march && animated ? " march" : "");
+      return `<line x1="${esc(el.x1)}" y1="${esc(el.y1)}" x2="${esc(el.x2)}" y2="${esc(el.y2)}"${cls(c)}/>`;
+    }
+    case "ring": {
+      const c = "stroke" + (el.dashed ? " dashline" : "") + (el.dashed && el.march && animated ? " march" : "");
+      return `<circle cx="${esc(el.x)}" cy="${esc(el.y)}" r="${esc(el.r)}"${cls(c)}/>`;
+    }
+    case "path": {
+      const d = el.verts.map((v, i) => `${i ? "L" : "M"}${esc(v[0])} ${esc(v[1])}`).join(" ") + (el.closed ? " Z" : "");
+      return `<path d="${d}"${cls("stroke")}/>`;
+    }
+    case "circle": {
+      const c = el.filled ? "fill" : "stroke" + (el.mask ? " bg-paint" : "");
+      const base = `cx="${esc(el.x)}" cy="${esc(el.y)}" r="${esc(el.r)}"`;
+      if (!el.filled && el.mask) {
+        return `<g${cls("")}><circle ${base} class="bg"/><circle ${base} class="stroke"/></g>`;
+      }
+      return `<circle ${base}${cls(c)}/>`;
+    }
+    case "dot":
+      return `<circle cx="${esc(el.x)}" cy="${esc(el.y)}" r="${esc(el.r)}"${cls("fill")}/>`;
+    case "square": {
+      const h = el.s / 2;
+      const base = `x="${esc(el.x - h)}" y="${esc(el.y - h)}" width="${esc(el.s)}" height="${esc(el.s)}"`;
+      const rot = el.rot ? ` transform="rotate(${el.rot} ${esc(el.x)} ${esc(el.y)})"` : "";
+      if (el.filled) return `<rect ${base}${rot}${cls("fill")}/>`;
+      if (el.mask) return `<g${cls("")}><rect ${base}${rot} class="bg"/><rect ${base}${rot} class="stroke"/></g>`;
+      return `<rect ${base}${rot}${cls("stroke")}/>`;
+    }
+  }
+  return "";
+}
+
+const ORDER = { line: 0, ring: 0, path: 1, circle: 2, square: 2, dot: 2 };
+
+function sceneToSvg(scene, { animated = true, standalone = false } = {}) {
+  const sorted = scene
+    .map((el, i) => ({ el, i }))
+    .sort((a, b) => (ORDER[a.el.type] - ORDER[b.el.type]) || (a.i - b.i));
+  const body = sorted.map(({ el }, idx) => primToSvg(el, idx, animated)).join("\n  ");
+  const styleTag = `<style>${BASE_CSS}${animated ? ANIM_CSS : ""}</style>\n  `;
+  const attrs = standalone
+    ? ` xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" color="#171717"`
+    : ` xmlns="http://www.w3.org/2000/svg"`;
+  return `<svg viewBox="0 0 ${W} ${H}"${attrs}>\n  ${styleTag}${body}\n</svg>`;
+}
+
+/* ============================================================
+ * Lottie exporter — minimal shape-layer document.
+ * 30 fps, 180 frames (6 s), loops seamlessly:
+ * dash offset travels exactly two dash periods.
+ * ============================================================ */
+
+const FR = 30, OP = 180;
+const INK_RGB = [0x17 / 255, 0x17 / 255, 0x17 / 255, 1];
+const BG_RGB = [1, 1, 1, 1];
+
+const LIN = { i: { x: [0.833], y: [0.833] }, o: { x: [0.167], y: [0.167] } };
+const EASE = { i: { x: [0.58], y: [1] }, o: { x: [0.42], y: [0] } };
+
+function kf(pairs, easing) {
+  return { a: 1, k: pairs.map(([t, s], i) => (i < pairs.length - 1 ? { t, s: [].concat(s), ...easing } : { t, s: [].concat(s) })) };
+}
+const stat = (v) => ({ a: 0, k: v });
+
+function stroke(dashed, march) {
+  const st = { ty: "st", c: stat(INK_RGB), o: stat(100), w: stat(STROKE), lc: 2, lj: 2 };
+  if (dashed) {
+    st.d = [
+      { n: "d", nm: "dash", v: stat(DASH[0]) },
+      { n: "g", nm: "gap", v: stat(DASH[1]) },
+      { n: "o", nm: "offset", v: march ? kf([[0, 0], [OP, -(DASH[0] + DASH[1]) * 2]], LIN) : stat(0) },
+    ];
+  }
+  return st;
+}
+const fill = (c) => ({ ty: "fl", c: stat(c), o: stat(100) });
+const TR0 = { ty: "tr", p: stat([0, 0]), a: stat([0, 0]), s: stat([100, 100]), r: stat(0), o: stat(100) };
+
+function layer(name, shapes, { anim, delay = 0, cx = 0, cy = 0, appearAt = 0 } = {}) {
+  const ks = {
+    o: kf([[appearAt, 0], [appearAt + 10, 100]], LIN),
+    r: stat(0),
+    p: stat([0, 0, 0]),
+    a: stat([0, 0, 0]),
+    s: stat([100, 100, 100]),
+  };
+  if (anim === "pulse") {
+    ks.a = stat([cx, cy, 0]);
+    ks.p = stat([cx, cy, 0]);
+    const d = Math.round(delay * FR) % OP;
+    ks.s = kf([[0, [100, 100, 100]], [d + 45, [122, 122, 100]], [Math.min(OP, d + 96), [100, 100, 100]], [OP, [100, 100, 100]]].filter((k, i, a2) => i === 0 || k[0] > a2[i - 1][0]), EASE);
+  } else if (anim === "floaty") {
+    const d = Math.round(delay * FR) % OP;
+    ks.p = kf([[0, [0, 0, 0]], [d + 55, [0, -3.5, 0]], [Math.min(OP, d + 126), [0, 0, 0]], [OP, [0, 0, 0]]].filter((k, i, a2) => i === 0 || k[0] > a2[i - 1][0]), EASE);
+  } else if (anim === "blink") {
+    const d = Math.round(delay * FR) % OP;
+    ks.o = kf([[0, 100], [d + 50, 15], [Math.min(OP, d + 108), 100], [OP, 100]].filter((k, i, a2) => i === 0 || k[0] > a2[i - 1][0]), EASE);
+  }
+  return { ddd: 0, ty: 4, nm: name, sr: 1, ip: 0, op: OP, st: 0, ks, shapes };
+}
+
+function group(items) { return { ty: "gr", it: [...items, TR0], nm: "g" }; }
+
+function ellipseShape(x, y, r2) { return { ty: "el", p: stat([x, y]), s: stat([r2 * 2, r2 * 2]) }; }
+function rectShape(x, y, s, rot) {
+  if (!rot) return { ty: "rc", p: stat([x, y]), s: stat([s, s]), r: stat(0) };
+  return null; // rotated squares are emitted as paths
+}
+function polyPath(verts, closed) {
+  return {
+    ty: "sh",
+    ks: stat({ c: !!closed, v: verts, i: verts.map(() => [0, 0]), o: verts.map(() => [0, 0]) }),
+  };
+}
+function diamondVerts(x, y, s) {
+  const h = (s * Math.SQRT2) / 2;
+  return [[x, y - h], [x + h, y], [x, y + h], [x - h, y]];
+}
+
+function sceneToLottie(scene, name) {
+  const sorted = scene
+    .map((el, i) => ({ el, i }))
+    .sort((a, b) => (ORDER[a.el.type] - ORDER[b.el.type]) || (a.i - b.i));
+  const layers = [];
+  // Lottie renders earlier layers on top → emit shapes (top) before lines (bottom).
+  const tops = [], bottoms = [];
+  sorted.forEach(({ el }, idx) => {
+    const appearAt = Math.min(30, idx);
+    const opts = { anim: el.anim, delay: el.delay || 0, appearAt };
+    let ly = null;
+    switch (el.type) {
+      case "line":
+        ly = layer("line", [group([polyPath([[el.x1, el.y1], [el.x2, el.y2]], false), stroke(el.dashed, el.march)])], opts);
+        break;
+      case "ring":
+        ly = layer("ring", [group([ellipseShape(el.x, el.y, el.r), stroke(el.dashed, el.march)])], opts);
+        break;
+      case "path":
+        ly = layer("path", [group([polyPath(el.verts, el.closed), stroke(false, false)])], opts);
+        break;
+      case "circle": {
+        const items = [ellipseShape(el.x, el.y, el.r)];
+        if (el.filled) items.push(fill(INK_RGB));
+        else { items.push(stroke(false, false)); if (el.mask) items.push(fill(BG_RGB)); }
+        ly = layer("circle", [group(items)], { ...opts, cx: el.x, cy: el.y });
+        break;
+      }
+      case "dot":
+        ly = layer("dot", [group([ellipseShape(el.x, el.y, el.r), fill(INK_RGB)])], { ...opts, cx: el.x, cy: el.y });
+        break;
+      case "square": {
+        const shp = el.rot ? polyPath(diamondVerts(el.x, el.y, el.s), true) : rectShape(el.x, el.y, el.s);
+        const items = [shp];
+        if (el.filled) items.push(fill(INK_RGB));
+        else { items.push(stroke(false, false)); if (el.mask) items.push(fill(BG_RGB)); }
+        ly = layer("square", [group(items)], { ...opts, cx: el.x, cy: el.y });
+        break;
+      }
+    }
+    if (!ly) return;
+    (ORDER[el.type] >= 1 ? tops : bottoms).push(ly);
+  });
+  const all = [...tops.reverse(), ...bottoms];
+  all.forEach((l, i) => { l.ind = i + 1; });
+  return {
+    v: "5.9.0", fr: FR, ip: 0, op: OP, w: W, h: H, nm: name || "illustration",
+    ddd: 0, assets: [], layers: all,
+  };
+}
+
+/* ============================================================
+ * App wiring
+ * ============================================================ */
+
+const gridEl = document.getElementById("grid");
+const promptEl = document.getElementById("prompt");
+const archEl = document.getElementById("archetype");
+for (const name of Object.keys(ARCHETYPES)) {
+  const o = document.createElement("option");
+  o.value = name; o.textContent = name;
+  archEl.appendChild(o);
+}
+
+let seedBase = 1;
+const VARIANTS = 6;
+
+function buildScene(prompt, seed, forced) {
+  const r = makeRng(prompt, seed);
+  const arch = pickArchetype(prompt, r, forced);
+  return { arch, prims: ARCHETYPES[arch](r), seed };
+}
+
+function download(filename, text, mime) {
+  const blob = new Blob([text], { type: mime });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+
+function slug(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "illustration"; }
+
+function renderGrid() {
+  const prompt = promptEl.value.trim() || "connections";
+  const forced = archEl.value;
+  gridEl.innerHTML = "";
+  for (let i = 0; i < VARIANTS; i++) {
+    const seed = seedBase + i;
+    const scene = buildScene(prompt, seed, forced);
+    const card = document.createElement("div");
+    card.className = "card";
+    const stage = document.createElement("div");
+    stage.className = "stage";
+    stage.innerHTML = sceneToSvg(scene.prims, { animated: true });
+    const label = document.createElement("p");
+    label.className = "label";
+    label.textContent = prompt;
+    const sub = document.createElement("p");
+    sub.className = "sub";
+    sub.textContent = `${scene.arch} · seed ${seed}`;
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const mk = (text, fn) => {
+      const b = document.createElement("button");
+      b.textContent = text;
+      b.addEventListener("click", fn);
+      actions.appendChild(b);
+    };
+    mk("SVG", () => download(`${slug(prompt)}-${seed}.svg`, sceneToSvg(scene.prims, { animated: true, standalone: true }), "image/svg+xml"));
+    mk("Copy", async (e) => {
+      await navigator.clipboard.writeText(sceneToSvg(scene.prims, { animated: true, standalone: true }));
+      e.target.textContent = "Copied"; setTimeout(() => (e.target.textContent = "Copy"), 1200);
+    });
+    mk("Lottie", () => download(`${slug(prompt)}-${seed}.json`, JSON.stringify(sceneToLottie(scene.prims, prompt)), "application/json"));
+    mk("↻", () => {
+      const s2 = buildScene(prompt, seed + Math.floor(Math.random() * 1e6), forced);
+      stage.innerHTML = sceneToSvg(s2.prims, { animated: true });
+      sub.textContent = `${s2.arch} · seed ${s2.seed}`;
+      Object.assign(scene, s2);
+    });
+    card.append(label, sub, stage, actions);
+    gridEl.appendChild(card);
+  }
+}
+
+document.getElementById("generate").addEventListener("click", () => { seedBase = 1; renderGrid(); });
+document.getElementById("shuffle").addEventListener("click", () => { seedBase += VARIANTS; renderGrid(); });
+promptEl.addEventListener("keydown", (e) => { if (e.key === "Enter") { seedBase = 1; renderGrid(); } });
+
+renderGrid();
+
+// Expose for testing / embedding.
+window.Illustrator = { buildScene, sceneToSvg, sceneToLottie, ARCHETYPES, pickArchetype, makeRng };
+</script>
+</body>
+</html>
