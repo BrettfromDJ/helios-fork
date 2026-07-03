@@ -10,7 +10,13 @@
     --muted: #6b6b6b;
     --line: #e4e4e4;
     --bg: #ffffff;
+    --btn-text: #ffffff;
   }
+  @media (prefers-color-scheme: dark) {
+    :root { --ink: #ededed; --muted: #9a9a9a; --line: #2c2c2c; --bg: #111111; --btn-text: #111111; }
+  }
+  :root[data-theme="dark"] { --ink: #ededed; --muted: #9a9a9a; --line: #2c2c2c; --bg: #111111; --btn-text: #111111; }
+  :root[data-theme="light"] { --ink: #171717; --muted: #6b6b6b; --line: #e4e4e4; --bg: #ffffff; --btn-text: #ffffff; }
   * { box-sizing: border-box; }
   body {
     margin: 0;
@@ -43,6 +49,7 @@
     border: 1px solid var(--line);
     border-radius: 8px;
     outline: none;
+    background: var(--bg);
     color: var(--ink);
   }
   .controls input[type="text"]:focus { border-color: var(--ink); }
@@ -52,7 +59,7 @@
     padding: 10px 10px;
     border: 1px solid var(--line);
     border-radius: 8px;
-    background: #fff;
+    background: var(--bg);
     color: var(--ink);
   }
   button {
@@ -61,12 +68,12 @@
     padding: 10px 16px;
     border: 1px solid var(--ink);
     background: var(--ink);
-    color: #fff;
+    color: var(--btn-text);
     border-radius: 8px;
     cursor: pointer;
   }
   button.ghost {
-    background: #fff;
+    background: var(--bg);
     color: var(--ink);
     border-color: var(--line);
   }
@@ -82,13 +89,13 @@
   .card { border-top: 1px solid var(--line); padding-top: 18px; }
   .card .label { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
   .card .sub { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
-  .card .stage { width: 100%; aspect-ratio: 1; }
+  .card .stage { width: 100%; aspect-ratio: 1; color: var(--ink); --illo-bg: var(--bg); }
   .card .stage svg { width: 100%; height: 100%; display: block; }
   .card .actions { display: flex; gap: 8px; }
   .card .actions button {
     font-size: 12px;
     padding: 6px 10px;
-    background: #fff;
+    background: var(--bg);
     color: var(--ink);
     border: 1px solid var(--line);
     border-radius: 6px;
@@ -100,12 +107,6 @@
     padding: 8px 32px 56px;
     color: var(--muted);
     font-size: 12px;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root { --ink: #ededed; --muted: #9a9a9a; --line: #2c2c2c; --bg: #111111; }
-    .controls select, button.ghost, .card .actions button { background: var(--bg); }
-    .controls input[type="text"] { background: var(--bg); }
-    button { color: #111; }
   }
 </style>
 </head>
