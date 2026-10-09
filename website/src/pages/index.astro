@@ -1,0 +1,287 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const GITHUB = 'https://github.com/HeliosSoftware/hfs';
+
+const features = [
+  {
+    title: 'Blazing fast',
+    body: 'Built in Rust for maximum performance and minimal resource usage.',
+  },
+  {
+    title: 'Analytics-first',
+    body: 'Optimized for clinical data analytics and research workloads.',
+  },
+  {
+    title: 'Modular design',
+    body: 'Use only what you need, from FHIRPath expressions to a full FHIR server.',
+  },
+  {
+    title: 'Multi-version',
+    body: 'Work with R4, R4B, R5, and R6 data in the same application.',
+  },
+  {
+    title: 'Polyglot storage',
+    body: 'SQLite, PostgreSQL, Elasticsearch, MongoDB, and S3, alone or combined.',
+  },
+  {
+    title: 'Developer friendly',
+    body: 'Clear error messages, thorough documentation, and CLI tools.',
+  },
+];
+
+const useCases = [
+  'Clinical research platforms',
+  'Real-time analytics dashboards',
+  'Data quality tools',
+  'ETL pipelines',
+  'Healthcare APIs',
+  'Cohort analytics at scale',
+];
+---
+
+<Layout>
+  <header class="nav container">
+    <a href="/" class="brand">
+      <img src="/helios-logo.png" alt="Helios" width="116" height="29" />
+    </a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#get-started">Get started</a>
+      <a href={GITHUB} class="btn btn-small">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero container">
+      <p class="eyebrow">Open source · MIT licensed</p>
+      <h1>The FHIR server built for analytics</h1>
+      <p class="lede">
+        Helios is a high-performance implementation of the HL7® FHIR® standard, written in Rust.
+        Run it as a full server, as standalone CLI tools, or embed it directly in your data
+        pipeline.
+      </p>
+      <div class="cta">
+        <a href="#get-started" class="btn">Get started</a>
+        <a href={GITHUB} class="btn btn-ghost">View on GitHub</a>
+      </div>
+    </section>
+
+    <section id="features" class="section container">
+      <h2>Why Helios</h2>
+      <div class="grid">
+        {
+          features.map((f) => (
+            <article class="card">
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="section band">
+      <div class="container">
+        <h2>What people build with Helios</h2>
+        <ul class="pills">{useCases.map((u) => <li>{u}</li>)}</ul>
+      </div>
+    </section>
+
+    <section id="get-started" class="section container">
+      <h2>Up and running in one command</h2>
+      <p class="muted">Pre-built multi-arch Docker images are on GitHub Container Registry.</p>
+      <pre><code>docker run -p 8080:8080 ghcr.io/heliossoftware/hfs:latest</code></pre>
+      <p class="muted">
+        Then open <code>http://localhost:8080/metadata</code>. Release binaries for every platform
+        are on <a href={`${GITHUB}/releases`}>GitHub Releases</a>.
+      </p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <span>© {new Date().getFullYear()} Helios Software</span>
+      <span class="footer-links">
+        <a href={`${GITHUB}/discussions`}>Community</a>
+        <a href={GITHUB}>GitHub</a>
+      </span>
+    </div>
+  </footer>
+</Layout>
+
+<style>
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+  .brand img {
+    display: block;
+    height: 29px;
+    width: auto;
+  }
+  @media (prefers-color-scheme: dark) {
+    /* The logo's wordmark is dark grey; flip lightness but keep hues */
+    .brand img {
+      filter: invert(1) hue-rotate(180deg);
+    }
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 0.95rem;
+  }
+  nav a {
+    text-decoration: none;
+    color: var(--muted);
+  }
+  nav a:hover {
+    color: var(--text);
+  }
+
+  .hero {
+    padding-top: 96px;
+    padding-bottom: 96px;
+    max-width: 820px;
+    text-align: center;
+  }
+  .eyebrow {
+    color: var(--accent);
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 12px;
+  }
+  h1 {
+    font-size: clamp(2.25rem, 6vw, 3.75rem);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    margin: 0 0 20px;
+  }
+  .lede {
+    font-size: 1.2rem;
+    color: var(--muted);
+    margin: 0 auto 32px;
+  }
+  .cta {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 12px 22px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: var(--accent-ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .btn:hover {
+    filter: brightness(1.05);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  nav .btn-small {
+    padding: 6px 14px;
+    color: var(--accent-ink);
+  }
+
+  .section {
+    padding-top: 72px;
+    padding-bottom: 72px;
+  }
+  h2 {
+    font-size: clamp(1.6rem, 3.5vw, 2.25rem);
+    letter-spacing: -0.01em;
+    margin: 0 0 28px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .card h3 {
+    margin: 0 0 8px;
+    font-size: 1.1rem;
+  }
+  .card p {
+    margin: 0;
+    color: var(--muted);
+  }
+
+  .band {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .pills {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .pills li {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 8px 16px;
+  }
+
+  .muted {
+    color: var(--muted);
+  }
+  pre {
+    background: var(--code-bg);
+    color: var(--code-text);
+    padding: 18px 20px;
+    border-radius: 10px;
+    overflow-x: auto;
+    font-size: 0.95rem;
+  }
+
+  .footer {
+    border-top: 1px solid var(--border);
+    padding: 28px 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .footer-inner {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .footer-links {
+    display: flex;
+    gap: 20px;
+  }
+
+  @media (max-width: 560px) {
+    nav a:not(.btn) {
+      display: none;
+    }
+    .hero {
+      padding-top: 56px;
+      padding-bottom: 56px;
+    }
+  }
+</style>

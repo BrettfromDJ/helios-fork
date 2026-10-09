@@ -1,0 +1,18 @@
+# Build output
+dist/
+.astro/
+.vercel/
+
+# Dependencies
+node_modules/
+
+# Keep the lockfile for reproducible Vercel builds
+# (the repo root .gitignore ignores package-lock.json globally)
+!package-lock.json
+
+# Environment
+.env
+.env.*
+
+# Logs
+npm-debug.log*
