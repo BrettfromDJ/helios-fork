@@ -1,0 +1,30 @@
+---
+// The Helios orb, cropped from the logo sprite exactly as the Figma design does
+// (the sprite is shown at full height with the orb at its left edge).
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class:list={['orb', className]} aria-hidden="true">
+  <img src="/figma/logo-sprite.png" alt="" />
+</div>
+
+<style>
+  .orb {
+    position: absolute;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .orb img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 394.56%;
+    max-width: none;
+  }
+</style>
