@@ -1,0 +1,85 @@
+---
+import Button from './Button.astro';
+import { BOOK_CALL, nav } from '../data/site';
+---
+
+<a class="banner" href="#">
+  Where AI is Actually Landing in Healthcare
+  <img src="/figma/arrow-right-blue.svg" alt="" width="12" height="12" />
+</a>
+
+<header class="site-header">
+  <div class="container header-inner">
+    <a href="/" class="logo" aria-label="Helios home">
+      <img src="/helios-logo.png" alt="Helios" width="136" height="34" />
+    </a>
+    <nav aria-label="Main">
+      {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+    </nav>
+    <Button href={BOOK_CALL} arrow>Book a call</Button>
+  </div>
+</header>
+
+<style>
+  .banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 40px;
+    padding-inline: 16px;
+    background: rgba(51, 184, 255, 0.1);
+    color: var(--blue-strong);
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  .site-header {
+    background: var(--white);
+    border: 1px solid var(--border);
+  }
+
+  .header-inner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+  }
+
+  .logo img {
+    width: 136px;
+    height: 34px;
+  }
+
+  nav {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 50px;
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  nav a:hover {
+    color: var(--blue-strong);
+  }
+
+  @media (max-width: 1100px) {
+    nav {
+      gap: 28px;
+    }
+  }
+
+  @media (max-width: 960px) {
+    nav {
+      display: none;
+    }
+  }
+</style>

@@ -2,17 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 import Button from '../components/Button.astro';
 import Orb from '../components/Orb.astro';
-
-// TODO: swap in real destinations once they exist.
-const BOOK_CALL = '#book-a-call';
-const GITHUB = 'https://github.com/HeliosSoftware/hfs';
-
-const nav = [
-  { label: 'FHIR Server', href: '#open-source' },
-  { label: 'Case Studies', href: '#case-studies' },
-  { label: 'Blog', href: '#' },
-  { label: 'About', href: '#' },
-];
+import StatsStrip from '../components/StatsStrip.astro';
+import GlowBand from '../components/GlowBand.astro';
+import { BOOK_CALL, GITHUB } from '../data/site';
 
 const stats = [
   'Live in 2,000+ clinics, integrated with seven EMRs',
@@ -25,44 +17,9 @@ const steps = [
   { n: '02', text: 'We’ll discuss your project and how we can help.' },
   { n: '03', text: 'If it’s a fit, we’ll put a plan in writing and get to work.' },
 ];
-
-const footerLinks = [
-  [
-    { label: 'FHIR Server', href: '#open-source' },
-    { label: 'Careers', href: '#' },
-    { label: 'Newsletter', href: '#newsletter' },
-  ],
-  [
-    { label: 'Consulting', href: '#' },
-    { label: 'Documentation', href: GITHUB },
-    { label: 'Contact', href: '#' },
-  ],
-  [
-    { label: 'Case Studies', href: '#case-studies' },
-    { label: 'Privacy Policy', href: '#' },
-  ],
-];
 ---
 
 <Layout>
-  <a class="banner" href="#">
-    Where AI is Actually Landing in Healthcare
-    <img src="/figma/arrow-right-blue.svg" alt="" width="12" height="12" />
-  </a>
-
-  <header class="site-header">
-    <div class="container header-inner">
-      <a href="/" class="logo" aria-label="Helios home">
-        <img src="/helios-logo.png" alt="Helios" width="136" height="34" />
-      </a>
-      <nav aria-label="Main">
-        {nav.map((item) => <a href={item.href}>{item.label}</a>)}
-      </nav>
-      <Button href={BOOK_CALL} arrow>Book a call</Button>
-    </div>
-  </header>
-
-  <main>
     <!-- Hero -->
     <section class="hero container">
       <p class="eyebrow">MEET HELIOS</p>
@@ -78,19 +35,8 @@ const footerLinks = [
         <Button href="#case-studies" variant="outline">See our work</Button>
       </div>
 
-      <div class="stats">
-        <div class="stats-rail" aria-hidden="true"></div>
-        <ul class="stats-grid">
-          {
-            stats.map((s) => (
-              <li>
-                <span class="marker" aria-hidden="true" />
-                {s}
-              </li>
-            ))
-          }
-        </ul>
-        <div class="stats-rail" aria-hidden="true"></div>
+      <div class="hero-stats">
+        <StatsStrip items={stats} cellWidth={290} />
       </div>
     </section>
 
@@ -201,9 +147,7 @@ const footerLinks = [
     </section>
 
     <!-- CTA: what it looks like when it works -->
-    <section class="glow-band band-works">
-      <Orb class="band-glow" />
-      <div class="container band-content">
+    <GlowBand padTop={103} padBottom={102}>
         <h2 class="heading-lg">What it looks like when it works</h2>
         <p class="band-text works-text">
           The software is live. Clinicians use it without thinking about it, the integration holds
@@ -211,11 +155,10 @@ const footerLinks = [
           running and what customers are saying.
         </p>
         <Button href={BOOK_CALL} variant="dark" arrow>Book a call</Button>
-      </div>
-    </section>
+    </GlowBand>
 
     <!-- Production -->
-    <section class="split container">
+    <section class="split split-section container">
       <h2 class="heading-lg split-title">
         <span class="dim-light">Most healthcare software looks fine</span>{' '}in a demo.
       </h2>
@@ -283,9 +226,7 @@ const footerLinks = [
     </section>
 
     <!-- CTA: what we put into production -->
-    <section id="book-a-call" class="glow-band band-answer">
-      <Orb class="band-glow flipped" />
-      <div class="container band-content">
+    <GlowBand id="book-a-call" flipped padTop={121} padBottom={120}>
         <Orb class="band-orb" />
         <h2 class="heading-lg answer-title">
           <span class="dim-soft">What we put into production,</span>{' '}we answer for.
@@ -295,145 +236,11 @@ const footerLinks = [
           whether we can help.
         </p>
         <Button href={BOOK_CALL} variant="dark" arrow>Book a call</Button>
-      </div>
-    </section>
-  </main>
+    </GlowBand>
 
-  <footer class="site-footer">
-    <div class="container">
-      <div id="newsletter" class="newsletter">
-        <h2 class="heading-lg">
-          Subscribe to our founder's newsletter to stay{' '}
-          <span class="bright">up to date on the latest in healthcare technology and AI.</span>
-        </h2>
-        <!-- TODO: connect to the newsletter provider -->
-        <form class="subscribe" action="#" method="post">
-          <label for="email" class="visually-hidden">Email address</label>
-          <input id="email" type="email" name="email" placeholder="Email address" required />
-          <button type="submit">Subscribe</button>
-        </form>
-      </div>
-
-      <div class="footer-main">
-        <div class="footer-brand">
-          <span class="footer-logo">
-            <img src="/helios-logo.png" alt="Helios" width="136" height="34" />
-            <span class="footer-wordmark" aria-hidden="true"></span>
-          </span>
-          <p>Helios Software is a Boston-based healthcare software engineering firm.</p>
-        </div>
-        <nav class="footer-links" aria-label="Footer">
-          {
-            footerLinks.map((col) => (
-              <ul>
-                {col.map((l) => (
-                  <li>
-                    <a href={l.href}>{l.label}</a>
-                  </li>
-                ))}
-              </ul>
-            ))
-          }
-        </nav>
-      </div>
-
-      <p class="legal">HL7® and FHIR® are registered trademarks of Health Level Seven International.</p>
-    </div>
-  </footer>
 </Layout>
 
 <style>
-  /* ---------- Banner + header ---------- */
-  .banner {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    height: 40px;
-    padding-inline: 16px;
-    background: rgba(51, 184, 255, 0.1);
-    color: var(--blue-strong);
-    font-family: var(--font-ui);
-    font-weight: 500;
-    font-size: 12px;
-    text-align: center;
-  }
-
-  .site-header {
-    background: var(--white);
-    border: 1px solid var(--border);
-  }
-
-  .header-inner {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: 80px;
-  }
-
-  .logo img {
-    width: 136px;
-    height: 34px;
-  }
-
-  .site-header nav {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 50px;
-    font-weight: 500;
-    font-size: 15px;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-
-  .site-header nav a:hover {
-    color: var(--blue-strong);
-  }
-
-  /* ---------- Shared bits ---------- */
-  .marker {
-    display: block;
-    width: 11px;
-    height: 11px;
-    border-radius: 2px;
-    background: var(--blue-strong);
-  }
-
-  .rule-top {
-    border-top: 1px solid var(--border);
-  }
-
-  .actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 16px;
-  }
-
-  .actions-center {
-    justify-content: center;
-  }
-
-  .card {
-    position: relative;
-    overflow: hidden;
-    margin: 0;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-card);
-    box-shadow: var(--card-shadow);
-  }
-
-  .dim-ink {
-    color: rgba(16, 16, 16, 0.5);
-  }
-
-  .dim-light {
-    color: rgba(16, 16, 16, 0.39);
-  }
-
   /* ---------- Hero ---------- */
   .hero {
     padding-top: 98px;
@@ -441,11 +248,7 @@ const footerLinks = [
     text-align: center;
   }
 
-  .eyebrow {
-    font-family: var(--font-ui);
-    font-weight: 500;
-    font-size: 12px;
-    color: var(--blue-strong);
+  .hero .eyebrow {
     margin-bottom: 24px;
   }
 
@@ -459,64 +262,8 @@ const footerLinks = [
     margin: 24px auto;
   }
 
-  .stats {
-    display: flex;
-    justify-content: center;
+  .hero-stats {
     margin-top: 85px;
-  }
-
-  .stats-rail {
-    position: relative;
-    width: 30px;
-    flex: none;
-    border: 1px solid var(--border-soft);
-  }
-
-  .stats-rail:first-child {
-    border-right: 0;
-  }
-
-  .stats-rail:last-child {
-    border-left: 0;
-  }
-
-  .stats-rail::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url('/figma/hatch.png') top left / 595px 493px;
-    opacity: 0.1;
-  }
-
-  .stats-grid {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(3, 290px);
-    border: 1px solid var(--border-soft);
-    text-align: left;
-  }
-
-  .stats-grid li {
-    min-height: 121px;
-    padding: 30px 30px 24px;
-    font-size: 14px;
-    line-height: 19px;
-    letter-spacing: -0.02em;
-    color: var(--muted);
-  }
-
-  .stats-grid li + li {
-    border-left: 1px solid var(--border-soft);
-  }
-
-  .stats-grid .marker {
-    margin-bottom: 14px;
-  }
-
-  .stats-grid li {
-    max-width: 290px;
   }
 
   /* ---------- Statement ---------- */
@@ -543,37 +290,6 @@ const footerLinks = [
     gap: 32px;
     padding-top: 79px;
     padding-bottom: 79px;
-  }
-
-  /* 39px + the 1px border puts content 40px in, as in the design */
-  .service-card {
-    min-height: 315px;
-    padding: 39px;
-    background: linear-gradient(to bottom, var(--white), #f8f8f8);
-  }
-
-  .service-copy {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
-  }
-
-  .service-copy h3 {
-    max-width: 344px;
-    font-weight: 500;
-    font-size: 32px;
-    line-height: 1.2;
-    letter-spacing: -0.02em;
-  }
-
-  .service-copy p {
-    max-width: 382px;
-    font-size: 16px;
-    line-height: 24px;
-    letter-spacing: -0.02em;
-    color: var(--muted);
   }
 
   .service-copy p.wide {
@@ -777,43 +493,10 @@ const footerLinks = [
   }
 
   /* ---------- Gradient bands ---------- */
-  .glow-band {
-    position: relative;
-    overflow: hidden;
-    background: var(--blue-strong);
-    color: var(--white);
-    text-align: center;
-  }
-
-  .glow-band :global(.band-glow) {
-    left: 50%;
-    top: 328px;
-    width: 1275px;
-    height: 1257px;
-    transform: translate(-50%, -50%);
-    filter: blur(47px);
-  }
-
-  .glow-band :global(.band-glow.flipped) {
-    transform: translate(-50%, -50%) scaleX(-1);
-  }
-
-  .band-content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
   .band-text {
     font-size: 18px;
     line-height: 24px;
     letter-spacing: -0.02em;
-  }
-
-  .band-works .band-content {
-    padding-top: 103px;
-    padding-bottom: 102px;
   }
 
   .works-text {
@@ -821,12 +504,7 @@ const footerLinks = [
     margin: 24px 0;
   }
 
-  .band-answer .band-content {
-    padding-top: 121px;
-    padding-bottom: 120px;
-  }
-
-  .band-content :global(.band-orb) {
+  :global(.orb.band-orb) {
     position: relative;
     width: 60.5px;
     height: 59.7px;
@@ -835,10 +513,6 @@ const footerLinks = [
 
   .answer-title {
     max-width: 600px;
-  }
-
-  .dim-soft {
-    color: rgba(255, 255, 255, 0.7);
   }
 
   .answer-text {
@@ -853,7 +527,7 @@ const footerLinks = [
     gap: 48px;
   }
 
-  main > .split {
+  .split-section {
     padding-top: 80px;
     padding-bottom: 80px;
   }
@@ -910,10 +584,6 @@ const footerLinks = [
 
   .split-dark .split-text {
     max-width: 543px;
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .dim-white {
     color: rgba(255, 255, 255, 0.5);
   }
 
@@ -982,193 +652,15 @@ const footerLinks = [
     opacity: 0.4;
   }
 
-  /* ---------- Footer ---------- */
-  .site-footer {
-    background: var(--ink-deep);
-    color: var(--white);
-  }
-
-  .newsletter {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-end;
-    gap: 48px;
-    padding-top: 72px;
-    padding-bottom: 46px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .newsletter h2 {
-    max-width: 805px;
-    color: rgba(255, 255, 255, 0.4);
-  }
-
-  .bright {
-    color: var(--white);
-  }
-
-  .subscribe {
-    display: flex;
-    flex: none;
-    width: 360px;
-    height: 60px;
-  }
-
-  .subscribe input {
-    flex: 1;
-    min-width: 0;
-    padding: 0 20px;
-    border: 0;
-    border-radius: var(--radius-button) 0 0 var(--radius-button);
-    background: rgba(255, 229, 229, 0.06);
-    color: var(--white);
-    font: 400 18px/24px var(--font-sans);
-    letter-spacing: -0.02em;
-  }
-
-  .subscribe input::placeholder {
-    color: rgba(255, 255, 255, 0.3);
-  }
-
-  .subscribe input:focus {
-    outline: 2px solid var(--blue);
-    outline-offset: -2px;
-  }
-
-  .subscribe button {
-    width: 120px;
-    border: 0;
-    border-radius: 0 var(--radius-button) var(--radius-button) 0;
-    background: var(--white);
-    color: var(--ink-deep);
-    font: 500 16px var(--font-sans);
-    cursor: pointer;
-  }
-
-  .footer-main {
-    display: flex;
-    justify-content: space-between;
-    gap: 48px;
-    padding-top: 52px;
-    padding-bottom: 47px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  }
-
-  .footer-logo {
-    position: relative;
-    display: block;
-    width: 136px;
-    height: 34px;
-  }
-
-  /* Paint the logo's wordmark white, as the design does */
-  .footer-wordmark {
-    position: absolute;
-    left: 44px;
-    top: 0;
-    width: 92px;
-    height: 34px;
-    background: var(--white);
-    -webkit-mask: url('/helios-logo.png') -44px 0 / 136px 34px no-repeat;
-    mask: url('/helios-logo.png') -44px 0 / 136px 34px no-repeat;
-  }
-
-  .footer-brand p {
-    max-width: 400px;
-    margin-top: 16px;
-    font-size: 18px;
-    line-height: 24px;
-    letter-spacing: -0.02em;
-    color: rgba(255, 255, 255, 0.56);
-  }
-
-  .footer-links {
-    display: grid;
-    grid-template-columns: 208px 208px auto;
-    margin-top: 13px;
-  }
-
-  .footer-links ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .footer-links li {
-    line-height: 15px;
-  }
-
-  .footer-links a {
-    font-family: var(--font-ui);
-    font-weight: 500;
-    font-size: 12px;
-    line-height: 15px;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .footer-links a:hover {
-    color: var(--blue);
-  }
-
-  .legal {
-    padding-top: 41px;
-    padding-bottom: 78px;
-    font-family: var(--font-ui);
-    font-weight: 300;
-    font-size: 12px;
-    color: rgba(255, 255, 255, 0.5);
-  }
-
   /* ---------- Responsive ---------- */
-  @media (max-width: 1100px) {
-    .site-header nav {
-      gap: 28px;
-    }
-
-    .footer-links {
-      grid-template-columns: repeat(3, auto);
-      gap: 40px;
-    }
-  }
-
   @media (max-width: 960px) {
-    .site-header nav {
-      display: none;
-    }
-
-    .stats-rail {
-      display: none;
-    }
-
-    .stats-grid {
-      grid-template-columns: 1fr;
-      width: 100%;
-      max-width: 420px;
-    }
-
-    .stats-grid li {
-      min-height: 0;
-      max-width: none;
-    }
-
-    .stats-grid li + li {
-      border-left: 0;
-      border-top: 1px solid var(--border-soft);
-    }
-
     .services-grid,
     .case-grid {
       grid-template-columns: 1fr;
     }
 
     .case-head,
-    .split,
-    .newsletter,
-    .footer-main {
+    .split {
       flex-direction: column;
       align-items: flex-start;
     }
@@ -1191,7 +683,6 @@ const footerLinks = [
       display: none;
     }
 
-    .service-card,
     .testimonial,
     .quote {
       padding: 28px;
@@ -1211,15 +702,6 @@ const footerLinks = [
 
     .photo {
       min-height: 280px;
-    }
-
-    .subscribe {
-      width: 100%;
-    }
-
-    .footer-links {
-      grid-template-columns: 1fr 1fr;
-      row-gap: 20px;
     }
 
     .terminal-body {

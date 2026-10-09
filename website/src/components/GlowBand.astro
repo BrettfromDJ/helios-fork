@@ -1,0 +1,52 @@
+---
+// Full-width blue band with the blurred Helios orb behind centered content.
+import Orb from './Orb.astro';
+
+interface Props {
+  id?: string;
+  flipped?: boolean;
+  padTop: number;
+  padBottom: number;
+}
+
+const { id, flipped = false, padTop, padBottom } = Astro.props;
+---
+
+<section id={id} class="glow-band" style={`--pad-top: ${padTop}px; --pad-bottom: ${padBottom}px`}>
+  <Orb class:list={['band-glow', { flipped }]} />
+  <div class="container band-content">
+    <slot />
+  </div>
+</section>
+
+<style>
+  .glow-band {
+    position: relative;
+    overflow: hidden;
+    background: var(--blue-strong);
+    color: var(--white);
+    text-align: center;
+  }
+
+  .glow-band :global(.band-glow) {
+    left: 50%;
+    top: 328px;
+    width: 1275px;
+    height: 1257px;
+    transform: translate(-50%, -50%);
+    filter: blur(47px);
+  }
+
+  .glow-band :global(.band-glow.flipped) {
+    transform: translate(-50%, -50%) scaleX(-1);
+  }
+
+  .band-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: var(--pad-top);
+    padding-bottom: var(--pad-bottom);
+  }
+</style>

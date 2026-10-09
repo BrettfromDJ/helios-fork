@@ -1,0 +1,87 @@
+---
+// A one-line command with a Copy button.
+interface Props {
+  command: string;
+  theme?: 'light' | 'dark';
+}
+
+const { command, theme = 'light' } = Astro.props;
+---
+
+<div class:list={['code-box', theme]}>
+  <code>{command}</code>
+  <button type="button" data-copy={command}>Copy</button>
+</div>
+
+<script>
+  for (const button of document.querySelectorAll<HTMLButtonElement>('.code-box button')) {
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(button.dataset.copy ?? '');
+        button.textContent = 'Copied';
+        setTimeout(() => (button.textContent = 'Copy'), 1500);
+      } catch {
+        // Clipboard access can be blocked; the command stays selectable.
+      }
+    });
+  }
+</script>
+
+<style>
+  .code-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    width: 100%;
+    max-width: 637px;
+    min-height: 71px;
+    margin: 0 auto;
+    padding: 10px 10px 10px 24px;
+    border-radius: var(--radius-button);
+    text-align: left;
+  }
+
+  .light {
+    background: var(--surface);
+  }
+
+  .dark {
+    background: var(--navy);
+  }
+
+  code {
+    min-width: 0;
+    overflow-x: auto;
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+    white-space: nowrap;
+    color: var(--muted);
+  }
+
+  .dark code {
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  button {
+    flex: none;
+    padding: 16px 24px;
+    border: 0;
+    border-radius: var(--radius-button);
+    background: rgba(51, 184, 255, 0.2);
+    color: var(--blue);
+    font: 500 16px var(--font-sans);
+    cursor: pointer;
+  }
+
+  button:hover {
+    background: rgba(51, 184, 255, 0.28);
+  }
+
+  button:focus-visible {
+    outline: 2px solid var(--blue);
+    outline-offset: 2px;
+  }
+</style>

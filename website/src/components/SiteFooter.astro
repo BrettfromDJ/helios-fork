@@ -1,0 +1,213 @@
+---
+import { footerLinks } from '../data/site';
+---
+
+<footer class="site-footer">
+  <div class="container">
+    <div id="newsletter" class="newsletter">
+      <h2 class="heading-lg">
+        Subscribe to our founder's newsletter to stay{' '}
+        <span class="bright">up to date on the latest in healthcare technology and AI.</span>
+      </h2>
+      <!-- TODO: connect to the newsletter provider -->
+      <form class="subscribe" action="#" method="post">
+        <label for="email" class="visually-hidden">Email address</label>
+        <input id="email" type="email" name="email" placeholder="Email address" required />
+        <button type="submit">Subscribe</button>
+      </form>
+    </div>
+
+    <div class="footer-main">
+      <div class="footer-brand">
+        <span class="footer-logo">
+          <img src="/helios-logo.png" alt="Helios" width="136" height="34" />
+          <span class="footer-wordmark" aria-hidden="true"></span>
+        </span>
+        <p>Helios Software is a Boston-based healthcare software engineering firm.</p>
+      </div>
+      <nav class="footer-links" aria-label="Footer">
+        {
+          footerLinks.map((col) => (
+            <ul>
+              {col.map((l) => (
+                <li>
+                  <a href={l.href}>{l.label}</a>
+                </li>
+              ))}
+            </ul>
+          ))
+        }
+      </nav>
+    </div>
+
+    <p class="legal">HL7® and FHIR® are registered trademarks of Health Level Seven International.</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--ink-deep);
+    color: var(--white);
+  }
+
+  .newsletter {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 48px;
+    padding-top: 72px;
+    padding-bottom: 46px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .newsletter h2 {
+    max-width: 805px;
+    color: rgba(255, 255, 255, 0.4);
+  }
+
+  .bright {
+    color: var(--white);
+  }
+
+  .subscribe {
+    display: flex;
+    flex: none;
+    width: 360px;
+    height: 60px;
+  }
+
+  .subscribe input {
+    flex: 1;
+    min-width: 0;
+    padding: 0 20px;
+    border: 0;
+    border-radius: var(--radius-button) 0 0 var(--radius-button);
+    background: rgba(255, 229, 229, 0.06);
+    color: var(--white);
+    font: 400 18px/24px var(--font-sans);
+    letter-spacing: -0.02em;
+  }
+
+  .subscribe input::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  .subscribe input:focus {
+    outline: 2px solid var(--blue);
+    outline-offset: -2px;
+  }
+
+  .subscribe button {
+    width: 120px;
+    border: 0;
+    border-radius: 0 var(--radius-button) var(--radius-button) 0;
+    background: var(--white);
+    color: var(--ink-deep);
+    font: 500 16px var(--font-sans);
+    cursor: pointer;
+  }
+
+  .footer-main {
+    display: flex;
+    justify-content: space-between;
+    gap: 48px;
+    padding-top: 52px;
+    padding-bottom: 47px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .footer-logo {
+    position: relative;
+    display: block;
+    width: 136px;
+    height: 34px;
+  }
+
+  /* Paint the logo's wordmark white, as the design does */
+  .footer-wordmark {
+    position: absolute;
+    left: 44px;
+    top: 0;
+    width: 92px;
+    height: 34px;
+    background: var(--white);
+    -webkit-mask: url('/helios-logo.png') -44px 0 / 136px 34px no-repeat;
+    mask: url('/helios-logo.png') -44px 0 / 136px 34px no-repeat;
+  }
+
+  .footer-brand p {
+    max-width: 400px;
+    margin-top: 16px;
+    font-size: 18px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+    color: rgba(255, 255, 255, 0.56);
+  }
+
+  .footer-links {
+    display: grid;
+    grid-template-columns: 208px 208px auto;
+    margin-top: 13px;
+  }
+
+  .footer-links ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .footer-links li {
+    line-height: 15px;
+  }
+
+  .footer-links a {
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 15px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .footer-links a:hover {
+    color: var(--blue);
+  }
+
+  .legal {
+    padding-top: 41px;
+    padding-bottom: 78px;
+    font-family: var(--font-ui);
+    font-weight: 300;
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.5);
+  }
+
+  @media (max-width: 1100px) {
+    .footer-links {
+      grid-template-columns: repeat(3, auto);
+      gap: 40px;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .newsletter,
+    .footer-main {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .subscribe {
+      width: 100%;
+    }
+
+    .footer-links {
+      grid-template-columns: 1fr 1fr;
+      row-gap: 20px;
+    }
+  }
+</style>

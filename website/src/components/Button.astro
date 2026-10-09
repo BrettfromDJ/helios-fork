@@ -1,7 +1,7 @@
 ---
 interface Props {
   href: string;
-  variant?: 'primary' | 'outline' | 'dark' | 'outline-dark';
+  variant?: 'primary' | 'outline' | 'dark' | 'outline-dark' | 'outline-light';
   arrow?: boolean;
 }
 
@@ -59,11 +59,17 @@ const { href, variant = 'primary', arrow = false } = Astro.props;
     color: var(--white);
   }
 
+  .outline-light {
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: var(--white);
+  }
+
   .outline:hover {
     background: rgba(0, 15, 23, 0.03);
   }
 
-  .outline-dark:hover {
+  .outline-dark:hover,
+  .outline-light:hover {
     background: rgba(255, 255, 255, 0.06);
   }
 </style>

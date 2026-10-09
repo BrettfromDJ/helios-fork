@@ -1,0 +1,1249 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Button from '../components/Button.astro';
+import Orb from '../components/Orb.astro';
+import StatsStrip from '../components/StatsStrip.astro';
+import GlowBand from '../components/GlowBand.astro';
+import CodeBox from '../components/CodeBox.astro';
+import { BOOK_CALL, GITHUB, LINKEDIN, DOCKER_COMMAND } from '../data/site';
+
+const GET_STARTED = `${GITHUB}#quick-start`;
+
+const stats = ['R4 → R6, one system', '100+ FHIRPath functions', '5 storage backends', '4,300+ commits, MIT'];
+
+const terminology = [
+  ['MeSH', 'Medical Subject Headings'],
+  ['v3.Entity Risk', 'v3 Code System Entity Risk'],
+  ['v2.0121', 'v2 RESPONSE FLAG'],
+  ['NarrativeStatus', 'NarrativeStatus'],
+];
+
+const storage = [
+  { src: '/figma/postgres.svg', alt: 'PostgreSQL', w: 33, h: 34 },
+  { src: '/figma/elasticsearch.svg', alt: 'Elasticsearch', w: 34, h: 34 },
+  { src: '/figma/mongodb.svg', alt: 'MongoDB', w: 48, h: 48 },
+];
+
+const resourceTypes = ['All resources', 'ActivityDefinition', 'AdverseEvent'];
+
+// Order and position follow the design: the outer two tiles fade out.
+const subscriptionTiles = [
+  { label: 'IDLE', dot: '/figma/dot-attention.svg', value: '12', note: 'needs attention' },
+  { label: 'ACTIVE', dot: '/figma/dot-active.svg', value: '8', note: 'delivering' },
+  { label: 'DELIVERED', value: '12', note: 'no deliveries in the window' },
+  { label: 'IDLE', dot: '/figma/dot-idle.svg', value: '1', note: 'no clients' },
+];
+
+const useCases = [
+  'Research-ready datasets with SQL-on-FHIR',
+  'Real-time operational dashboards',
+  'Data quality checks with FHIRPath',
+  'ETL into warehouses and lakes',
+  'High-performance FHIR APIs',
+];
+
+const components = ['CLI tools', 'Embeddable libraries', 'Standalone services'];
+const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
+---
+
+<Layout
+  title="Helios FHIR Server"
+  description="The FHIR server for clinical analytics, written in Rust. R4 through R6 in one system, complete FHIRPath and SQL-on-FHIR engines, and exports straight to Parquet. Free under MIT."
+>
+  <!-- Hero -->
+  <section class="hero container">
+    <p class="eyebrow">OPEN SOURCE · MIT</p>
+    <h1 class="heading-xl">
+      The FHIR server for clinical analytics,{' '}<span class="dim-ink">written in Rust.</span>
+    </h1>
+    <p class="body-lg hero-lede">
+      R4 through R6 in one system, complete FHIRPath and SQL-on-FHIR engines, and exports straight
+      to Parquet. Free under MIT.
+    </p>
+    <div class="actions actions-center">
+      <Button href={GET_STARTED} arrow>Get started</Button>
+      <Button href={BOOK_CALL} variant="outline">Book a call</Button>
+    </div>
+    <div class="hero-code">
+      <CodeBox command={DOCKER_COMMAND} />
+    </div>
+    <p class="caption hero-caption">From the engineers building some of the largest FHIR applications.</p>
+  </section>
+
+  <!-- Product screenshot -->
+  <section class="container">
+    <div class="card screen">
+      <img
+        src="/figma/dashboard.png"
+        alt="The Helios FHIR Server dashboard: resource counts, export jobs, uptime and a chart of patients over time"
+        width="1320"
+        height="720"
+      />
+    </div>
+    <p class="caption screen-caption">A live instance running synthetic patient data. It resets nightly.</p>
+    <div class="fhir-stats">
+      <StatsStrip items={stats} cellHeight={104} />
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="container features">
+    <article class="card feature feature-wide feature-tall">
+      <Orb class="feature-glow glow-sql" />
+      <img class="feature-mockup mockup-sql" src="/figma/sql-on-fhir.png" alt="" loading="lazy" />
+      <div class="feature-copy">
+        <h3>SQL-on-FHIR, built in.</h3>
+        <p class="w-333">
+          Run ViewDefinitions against live data and export to CSV, JSON, NDJSON, or Parquet. Python
+          bindings included.
+        </p>
+      </div>
+    </article>
+
+    <div class="feature-row three">
+      <article class="card feature">
+        <div class="feature-copy">
+          <h3>A complete FHIRPath engine.</h3>
+          <p class="w-308">The full FHIRPath 3.0.0 specification, with more than 100 built-in functions.</p>
+        </div>
+        <img
+          class="fhirpath-diagram"
+          src="/figma/fhirpath-selection.png"
+          alt="A FHIRPath expression selecting the official given names from a Patient"
+          width="378"
+          height="210"
+          loading="lazy"
+        />
+      </article>
+
+      <article class="card feature">
+        <Orb class="feature-glow glow-terminology" />
+        <div class="feature-copy">
+          <h3>A native terminology server.</h3>
+          <p class="w-308">Code systems, value sets, and validation, served from the same platform.</p>
+        </div>
+        <ul class="code-systems" aria-label="Example code systems">
+          {
+            terminology.map(([code, name]) => (
+              <li>
+                <span>{code}</span>
+                <span>{name}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </article>
+
+      <article class="card feature">
+        <div class="feature-copy">
+          <h3>Storage that fits your stack.</h3>
+          <p class="w-333">
+            SQLite on a laptop, PostgreSQL, Elasticsearch, or MongoDB in production, S3 for scale.
+          </p>
+        </div>
+        <ul class="storage" aria-label="Supported storage backends">
+          {
+            storage.map((s) => (
+              <li>
+                <img src={s.src} alt={s.alt} width={s.w} height={s.h} />
+              </li>
+            ))
+          }
+        </ul>
+      </article>
+    </div>
+
+    <div class="feature-row two">
+      <article class="card feature feature-tall">
+        <div class="feature-copy">
+          <h3>Every FHIR version, one server</h3>
+          <p>Work with R4, R4B, R5, and R6 data in the same application.</p>
+        </div>
+      </article>
+
+      <article class="card feature feature-tall">
+        <Orb class="feature-glow glow-security" />
+        <img class="feature-mockup mockup-security" src="/figma/security-mockup.png" alt="" loading="lazy" />
+        <div class="feature-copy">
+          <h3>Security by standard.</h3>
+          <p>SMART on FHIR authorization, BALP-compliant audit logging, and multi-tenancy.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="feature-row two">
+      <article class="card feature">
+        <Orb class="feature-glow glow-pipelines" />
+        <div class="feature-copy">
+          <h3>Ready for your pipelines.</h3>
+          <p class="w-271 nudge-left">Bulk Data Export and CDS Hooks, ready for the systems around you.</p>
+        </div>
+        <div class="export-ui" aria-hidden="true">
+          <div class="export-options">
+            <div class="export-option selected">
+              <span class="radio"></span>
+              <strong>Everything</strong>
+              <span>The whole server - every resource type you select below.</span>
+            </div>
+            <div class="export-option">
+              <span class="radio"></span>
+              <strong>Patients</strong>
+              <span>Every patient, or only the ones you</span>
+            </div>
+          </div>
+          <div class="resource-panel">
+            <div class="resource-head">
+              <img src="/figma/layers.svg" alt="" width="16" height="16" />
+              <span>Resource types</span>
+              <span class="clear">Clear</span>
+            </div>
+            <ul class="resource-list">
+              {
+                resourceTypes.map((t, i) => (
+                  <li>
+                    <span class:list={['checkbox', { checked: i === 0 }]}>
+                      {i === 0 && <img src="/figma/check.svg" alt="" width="10" height="10" />}
+                    </span>
+                    {t}
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+        </div>
+      </article>
+
+      <article class="card feature">
+        <div class="feature-copy">
+          <h3>Subscriptions</h3>
+          <p class="w-257">
+            Topic-based notifications over rest-hook, WebSocket, and email, the moment a resource
+            changes.
+          </p>
+        </div>
+        <ul class="sub-tiles" aria-hidden="true">
+          {
+            subscriptionTiles.map((t) => (
+              <li>
+                <span class="sub-label">
+                  {t.dot && <img src={t.dot} alt="" width="8" height="8" />}
+                  {t.label}
+                </span>
+                <span class="sub-value">{t.value}</span>
+                <span class="sub-note">{t.note}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- What people build -->
+  <section class="build">
+    <p class="eyebrow container">WHAT PEOPLE BUILD</p>
+    <div class="marquee">
+      <ul class="marquee-track">
+        {[...useCases, ...useCases].map((u, i) => <li aria-hidden={i >= useCases.length ? 'true' : undefined}>{u}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <!-- Use all of it -->
+  <section class="parts rule-top">
+    <div class="container parts-inner">
+      <div class="parts-copy">
+        <h2 class="heading-lg">Use all of it,{' '}<span class="dim-ink">or just the parts you need.</span></h2>
+        <p class="body-lg">
+          The server runs as one system or as components: CLI tools for FHIRPath and SQL-on-FHIR,
+          embeddable libraries, and standalone services. Start with a single binary on a laptop and
+          grow into a production cluster without changing platforms.
+        </p>
+      </div>
+      <div class="diagram" role="img" aria-label="CLI tools, embeddable libraries and standalone services all build on the Helios FHIR Server, which runs on SQLite, PostgreSQL, Elasticsearch, MongoDB or S3">
+        <Orb class="diagram-glow" />
+        <div class="diagram-inner">
+          <div class="diagram-top">
+            {components.map((c) => <span class="glass">{c}</span>)}
+          </div>
+          <div class="connectors">
+            <img class="connector-left" src="/figma/connector-left.svg" alt="" />
+            <img class="connector-right" src="/figma/connector-right.svg" alt="" />
+            <img class="connector-mid" src="/figma/connector-vertical.svg" alt="" />
+          </div>
+          <span class="core">Helios FHIR Server</span>
+          <img class="connector-down" src="/figma/connector-vertical.svg" alt="" />
+          <div class="backends">
+            {backends.map((b) => <span>{b}</span>)}
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Implementation -->
+  <section class="implementation">
+    <div class="container">
+      <p class="eyebrow">IMPLEMENTATION</p>
+      <h2 class="heading-lg impl-title">
+        Run it yourself,{' '}<span class="ink-deep">or hire the team that wrote it.</span>
+      </h2>
+      <div class="impl-grid">
+        <article class="card service-card">
+          <div class="service-copy">
+            <h3>Open source</h3>
+            <p class="w-343">Free under MIT. Run it anywhere, read everything, keep your data model.</p>
+            <Button href={GITHUB} variant="outline">View on Github</Button>
+          </div>
+        </article>
+        <article class="card service-card">
+          <div class="service-copy">
+            <h3>Built on Helios</h3>
+            <p class="w-423">
+              Implementation in your environment, EHR and lab integrations, and new clinical
+              applications on the server, from the engineers who wrote it. Support agreements
+              included when you want them.
+            </p>
+            <Button href={BOOK_CALL} arrow>Book a call</Button>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="community">
+    <div class="community-panel github-panel">
+      <div class="panel-content">
+        <img src="/figma/github.svg" alt="" width="24" height="24" />
+        <p>
+          <strong>Every line is public.</strong>{' '}MIT license, 4,300+ commits, issues and roadmap
+          on GitHub.
+        </p>
+        <Button href={GITHUB} variant="outline">Give us a star</Button>
+      </div>
+    </div>
+    <div class="community-panel linkedin-panel">
+      <Orb class="community-glow" />
+      <div class="panel-content">
+        <img src="/figma/linkedin.svg" alt="" width="24" height="24" />
+        <p>
+          Join over <strong>2,500 members</strong> on our Helios LinkedIn group
+        </p>
+        <Button href={LINKEDIN} variant="outline-light">Check it out</Button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Up and running -->
+  <section class="running">
+    <div class="container">
+      <h2 class="heading-lg"><span class="dim-white">Up and running in</span>{' '}one command</h2>
+      <div class="running-code">
+        <CodeBox command={DOCKER_COMMAND} theme="dark" />
+      </div>
+      <div class="actions actions-center running-actions">
+        <Button href={GET_STARTED} arrow>Get started</Button>
+        <Button href={BOOK_CALL} variant="outline-dark">Book a call</Button>
+      </div>
+      <p class="caption running-caption">
+        From the engineers behind a SMART on FHIR platform live in more than 2,000 clinics.
+      </p>
+    </div>
+  </section>
+
+  <GlowBand flipped padTop={131} padBottom={130}>
+    <div class="github-orb">
+      <Orb class="github-orb-fill" />
+      <img src="/figma/github-alt.svg" alt="" width="20" height="21" />
+    </div>
+    <h2 class="heading-lg">Visit the Helios Github</h2>
+    <p class="band-text">
+      The Helios FHIR Server is an implementation of the HL7® FHIR® standard, built in Rust for high
+      performance and optimized for clinical analytics workloads.
+    </p>
+    <Button href={GITHUB} variant="dark">
+      <img src="/figma/github-white.svg" alt="" width="16" height="16" />
+      Visit the Github
+    </Button>
+  </GlowBand>
+</Layout>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero {
+    padding-top: 98px;
+    text-align: center;
+  }
+
+  .hero .eyebrow {
+    margin-bottom: 24px;
+  }
+
+  .hero h1 {
+    max-width: 687px;
+    margin: 0 auto;
+  }
+
+  .hero-lede {
+    max-width: 491px;
+    margin: 24px auto;
+  }
+
+  .hero-code {
+    margin-top: 34px;
+  }
+
+  .hero-caption {
+    margin-top: 18px;
+  }
+
+  /* ---------- Screenshot ---------- */
+  .screen {
+    margin-top: 40px;
+    background: linear-gradient(to bottom, var(--white), #f8f8f8);
+  }
+
+  .screen img {
+    width: 100%;
+    height: auto;
+  }
+
+  .screen-caption {
+    margin-top: 24px;
+    text-align: center;
+  }
+
+  .fhir-stats {
+    margin-top: 46px;
+  }
+
+  /* ---------- Feature cards ---------- */
+  .features {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding-top: 100px;
+  }
+
+  .feature-row {
+    display: grid;
+    gap: 32px;
+  }
+
+  .feature-row.three {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .feature-row.two {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* 41px + the 1px border puts content 42px in, as in the design */
+  .feature {
+    min-height: 344px;
+    padding: 41px;
+    background: var(--surface);
+  }
+
+  .feature-tall {
+    min-height: 505px;
+  }
+
+  .feature-copy {
+    position: relative;
+    z-index: 1;
+  }
+
+  .feature-copy h3 {
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .feature-copy p {
+    margin-top: 10px;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+    color: var(--muted);
+  }
+
+  .w-257 {
+    max-width: 257px;
+  }
+  .w-271 {
+    max-width: 271px;
+  }
+  .w-308 {
+    max-width: 308px;
+  }
+  .w-333 {
+    max-width: 333px;
+  }
+  .w-343 {
+    max-width: 343px;
+  }
+  .w-423 {
+    max-width: 423px;
+  }
+
+  .nudge-left {
+    margin-left: -3px;
+  }
+
+  .feature :global(.feature-glow) {
+    filter: blur(72px);
+    opacity: 0.67;
+  }
+
+  .feature :global(.glow-sql),
+  .feature :global(.glow-pipelines) {
+    left: 297px;
+    top: 65px;
+    width: 754px;
+    height: 745px;
+  }
+
+  .feature :global(.glow-terminology),
+  .feature :global(.glow-security) {
+    left: -14px;
+    top: 155px;
+    width: 439px;
+    height: 433px;
+  }
+
+  .feature-mockup {
+    position: absolute;
+    max-width: none;
+  }
+
+  .mockup-sql {
+    left: 521px;
+    top: 37px;
+    width: 842px;
+  }
+
+  .mockup-security {
+    left: 36px;
+    top: 129px;
+    width: 655px;
+  }
+
+  .fhirpath-diagram {
+    position: absolute;
+    left: 20px;
+    top: 123px;
+    width: 378px;
+    height: 210px;
+    object-fit: cover;
+  }
+
+  /* Terminology rows fade out toward the bottom of the card */
+  .code-systems {
+    position: absolute;
+    left: 39px;
+    top: 144px;
+    width: 338px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    -webkit-mask-image: linear-gradient(to bottom, #000 20%, rgba(0, 0, 0, 0.25) 100%);
+    mask-image: linear-gradient(to bottom, #000 20%, rgba(0, 0, 0, 0.25) 100%);
+  }
+
+  .code-systems li {
+    display: grid;
+    grid-template-columns: 114px 1fr;
+    align-items: center;
+    height: 49px;
+    padding: 0 22px;
+    border-radius: 12px;
+    background: var(--white);
+    box-shadow: 0 3.66px 3.66px rgba(0, 0, 0, 0.03);
+    font-size: 12px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+    color: var(--muted);
+  }
+
+  .storage {
+    position: absolute;
+    left: 80px;
+    top: 176px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 8px;
+  }
+
+  .storage li {
+    display: grid;
+    place-items: center;
+    width: 80px;
+    height: 80px;
+    border: 0.92px solid var(--border);
+    border-radius: 14.66px;
+    background: var(--white);
+    box-shadow: 0 3.66px 3.66px rgba(0, 0, 0, 0.03);
+  }
+
+  /* Bulk export UI */
+  .export-ui {
+    position: absolute;
+    left: 41px;
+    top: 149px;
+  }
+
+  .export-options {
+    display: flex;
+    gap: 12px;
+  }
+
+  .export-option {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 367px;
+    height: 73px;
+    padding-left: 49px;
+    border: 0.92px solid var(--border);
+    border-radius: 14.66px;
+    background: var(--white);
+    box-shadow: 0 3.66px 3.66px rgba(0, 0, 0, 0.03);
+  }
+
+  .export-option.selected {
+    border-color: var(--blue);
+  }
+
+  .export-option strong {
+    font-weight: 500;
+    font-size: 14px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .export-option span:not(.radio) {
+    font-size: 12px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .radio {
+    position: absolute;
+    left: 16px;
+    top: 16px;
+    width: 24px;
+    height: 24px;
+    border: 0.92px solid var(--border);
+    border-radius: 50%;
+    background: var(--white);
+  }
+
+  .selected .radio {
+    border-color: var(--blue);
+  }
+
+  .selected .radio::after {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--blue);
+  }
+
+  .resource-panel {
+    width: 1295px;
+    height: 322px;
+    margin-top: 10px;
+    border: 1px solid #e4e4e4;
+    border-radius: 10px;
+    background: var(--white);
+  }
+
+  .resource-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 57px;
+    padding: 0 8px 0 19px;
+    border-bottom: 1px solid #e4e4e4;
+    font-weight: 500;
+    font-size: 15px;
+    color: #000;
+  }
+
+  .clear {
+    display: grid;
+    place-items: center;
+    width: 76px;
+    height: 42px;
+    margin-left: auto;
+    border: 1px dashed #d1d1d1;
+    border-radius: 10px;
+    background: linear-gradient(to bottom, #fafafa, #f8f8f8);
+  }
+
+  .resource-list {
+    display: grid;
+    grid-template-columns: repeat(3, 199px);
+    margin: 0;
+    padding: 20px 15px;
+    list-style: none;
+  }
+
+  .resource-list li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #000;
+  }
+
+  .checkbox {
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border: 1px solid #e4e4e4;
+    border-radius: 4px;
+    background: var(--white);
+  }
+
+  .checkbox.checked {
+    border-color: var(--blue);
+    background: var(--blue);
+  }
+
+  /* Subscription tiles fade out at both edges of the card */
+  .sub-tiles {
+    position: absolute;
+    left: -35px;
+    top: 188px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    gap: 12px;
+    -webkit-mask-image: linear-gradient(to right, transparent 4%, #000 26%, #000 72%, transparent 96%);
+    mask-image: linear-gradient(to right, transparent 4%, #000 26%, #000 72%, transparent 96%);
+  }
+
+  .sub-tiles li {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    width: 169px;
+    height: 93px;
+    padding: 13px 17px;
+    border: 0.92px solid var(--border);
+    border-radius: 14.66px;
+    background: var(--white);
+    box-shadow: 0 3.66px 3.66px rgba(0, 0, 0, 0.03);
+  }
+
+  .sub-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+    font-size: 10px;
+    line-height: 12px;
+    letter-spacing: 0.02em;
+    color: #b1b1b1;
+  }
+
+  .sub-value {
+    margin-top: 8px;
+    font-weight: 500;
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .sub-note {
+    font-size: 12px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ---------- What people build ---------- */
+  .build {
+    padding-top: 100px;
+    padding-bottom: 80px;
+    overflow: hidden;
+  }
+
+  .marquee {
+    margin-top: 42px;
+  }
+
+  .marquee-track {
+    display: flex;
+    gap: 16px;
+    width: max-content;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    animation: marquee 60s linear infinite;
+  }
+
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
+  .marquee-track li {
+    display: flex;
+    align-items: center;
+    height: 66px;
+    padding: 0 26px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: linear-gradient(to bottom, var(--white), var(--tint));
+    font-size: 18px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+    color: var(--ink-deep);
+    white-space: nowrap;
+  }
+
+  @keyframes marquee {
+    from {
+      transform: translateX(-75px);
+    }
+    to {
+      /* half the track = one full set of items (+ one gap) */
+      transform: translateX(calc(-50% - 8px - 75px));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+      animation: none;
+      transform: translateX(-75px);
+    }
+  }
+
+  /* ---------- Use all of it ---------- */
+  .parts-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 48px;
+    padding-top: 79px;
+    padding-bottom: 80px;
+  }
+
+  /* The design sits the copy slightly below the diagram's center */
+  .parts-copy {
+    max-width: 491px;
+    margin-top: 22px;
+  }
+
+  .parts-copy p {
+    margin-top: 18px;
+  }
+
+  .diagram {
+    position: relative;
+    flex: none;
+    width: 759px;
+    height: 400px;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    background: var(--blue-strong);
+  }
+
+  .diagram :global(.diagram-glow) {
+    left: 380px;
+    top: 329px;
+    width: 795px;
+    height: 784px;
+    transform: translate(-50%, -50%);
+    filter: blur(47px);
+  }
+
+  .diagram-inner {
+    position: absolute;
+    left: 62px;
+    top: 63px;
+    width: 635px;
+    height: 275px;
+    color: var(--white);
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  .diagram-top {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .glass {
+    display: grid;
+    place-items: center;
+    width: 185px;
+    height: 84px;
+    border-radius: 19.7px;
+    background: linear-gradient(157deg, rgba(255, 252, 244, 0.4) 19%, rgba(255, 241, 229, 0.16) 86%);
+    -webkit-backdrop-filter: blur(12.3px);
+    backdrop-filter: blur(12.3px);
+    box-shadow:
+      12px 12px 120px rgba(138, 0, 0, 0.05),
+      inset 0 1.2px 1.8px rgba(255, 255, 255, 0.25),
+      inset 0 -1.2px 1.8px rgba(255, 255, 255, 0.1);
+  }
+
+  .connectors img,
+  .connector-down {
+    position: absolute;
+    max-width: none;
+  }
+
+  .connector-left {
+    left: 93px;
+    top: 90px;
+    width: 227px;
+    height: 27px;
+  }
+
+  .connector-right {
+    left: 320px;
+    top: 90px;
+    width: 227px;
+    height: 27px;
+    transform: scaleX(-1);
+  }
+
+  .connector-mid,
+  .connector-down {
+    left: 319.5px;
+    width: 1px;
+    height: 27px;
+  }
+
+  .connector-mid {
+    top: 90px;
+  }
+
+  .connector-down {
+    top: 209px;
+  }
+
+  .core {
+    position: absolute;
+    left: 185px;
+    top: 123px;
+    display: grid;
+    place-items: center;
+    width: 266px;
+    height: 84px;
+    border-radius: 19.7px;
+    background: linear-gradient(164deg, var(--ink-deep) 19%, rgba(0, 15, 23, 0.7) 86%);
+    box-shadow:
+      0 183px 51px rgba(0, 0, 0, 0.01),
+      0 117px 47px rgba(0, 0, 0, 0.05),
+      0 66px 40px rgba(0, 0, 0, 0.18),
+      0 29px 29px rgba(0, 0, 0, 0.3),
+      0 7px 16px rgba(0, 0, 0, 0.34);
+  }
+
+  .backends {
+    position: absolute;
+    left: 50%;
+    top: 241px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 16px;
+  }
+
+  .backends span {
+    padding: 8px 16px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 72px;
+    font-weight: 500;
+    font-size: 13px;
+    line-height: normal;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+
+  /* ---------- Implementation ---------- */
+  .implementation {
+    padding-top: 79px;
+    padding-bottom: 80px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .impl-title {
+    max-width: 533px;
+    margin: 24px auto 0;
+    color: var(--muted);
+  }
+
+  .ink-deep {
+    color: var(--ink-deep);
+  }
+
+  .impl-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+    margin-top: 40px;
+    text-align: left;
+  }
+
+  .impl-grid .service-copy p.w-343 {
+    max-width: 343px;
+  }
+
+  .impl-grid .service-copy p.w-423 {
+    max-width: 423px;
+  }
+
+  /* ---------- Community ---------- */
+  .community {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .community-panel {
+    position: relative;
+    overflow: hidden;
+    min-height: 287px;
+    padding: 40px;
+  }
+
+  .panel-content {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .community-panel p {
+    max-width: 393px;
+    margin: 16px 0 16px;
+    font-size: 21px;
+    line-height: 28px;
+    letter-spacing: -0.02em;
+  }
+
+  .github-panel {
+    background: var(--border-soft);
+  }
+
+  .github-panel p {
+    color: var(--muted);
+  }
+
+  .github-panel strong {
+    font-weight: 500;
+    color: var(--ink-deep);
+  }
+
+  .linkedin-panel {
+    padding-left: 41px;
+    background: var(--blue);
+  }
+
+  .linkedin-panel p {
+    max-width: 301px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+
+  .linkedin-panel strong {
+    font-weight: 600;
+    color: var(--white);
+  }
+
+  .linkedin-panel :global(.community-glow) {
+    left: 380px;
+    top: 329px;
+    width: 795px;
+    height: 784px;
+    transform: translate(-50%, -50%);
+    filter: blur(47px);
+  }
+
+  /* ---------- Up and running ---------- */
+  .running {
+    padding-top: 80px;
+    padding-bottom: 80px;
+    background: var(--ink-deep);
+    color: var(--white);
+    text-align: center;
+  }
+
+  .running-code {
+    margin-top: 32px;
+  }
+
+  .running-actions {
+    margin-top: 32px;
+  }
+
+  .running-caption {
+    margin-top: 24px;
+    color: rgba(255, 255, 255, 0.3);
+  }
+
+  /* ---------- Visit the Github ---------- */
+  .github-orb {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 60.5px;
+    height: 59.7px;
+    margin-bottom: 16px;
+  }
+
+  .github-orb :global(.github-orb-fill) {
+    inset: 0;
+  }
+
+  .github-orb img {
+    position: relative;
+  }
+
+  .band-text {
+    max-width: 491px;
+    margin: 16px 0;
+    font-size: 18px;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1240px) {
+    .parts-inner {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .diagram {
+      align-self: center;
+    }
+  }
+
+  @media (max-width: 960px) {
+    .feature-row.three,
+    .feature-row.two,
+    .impl-grid,
+    .community {
+      grid-template-columns: 1fr;
+    }
+
+    .feature-wide .feature-mockup {
+      left: 40%;
+      top: 180px;
+    }
+  }
+
+  @media (max-width: 800px) {
+    .diagram {
+      width: 100%;
+      height: auto;
+      min-height: 0;
+    }
+
+    .diagram-inner {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: auto;
+      height: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      padding: 32px 20px;
+    }
+
+    .diagram-top {
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .connectors,
+    .connector-down {
+      display: none;
+    }
+
+    .core,
+    .backends {
+      position: static;
+      transform: none;
+    }
+
+    .backends {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .feature {
+      padding: 28px;
+    }
+
+    /* This card has no visual in the design, so don't hold its height */
+    .feature-tall:not(:has(.feature-mockup)) {
+      min-height: 0;
+    }
+
+    .feature-wide .feature-mockup,
+    .mockup-security {
+      left: 28px;
+      top: 200px;
+    }
+
+    .fhirpath-diagram {
+      position: relative;
+      left: auto;
+      top: auto;
+      width: 100%;
+      height: auto;
+      margin-top: 20px;
+    }
+
+    .feature:has(.fhirpath-diagram) {
+      min-height: 0;
+    }
+
+    .code-systems,
+    .storage {
+      left: 28px;
+      right: 28px;
+      width: auto;
+    }
+
+    .export-ui {
+      left: 28px;
+    }
+
+    .community-panel {
+      padding: 28px;
+    }
+  }
+</style>

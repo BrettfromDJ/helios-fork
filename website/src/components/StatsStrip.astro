@@ -1,0 +1,127 @@
+---
+// A row of short facts with a blue marker each, framed by hatched rails.
+// `cellWidth` fixes each cell's width (homepage); without it the strip fills
+// the container (FHIR Server page).
+interface Props {
+  items: string[];
+  cellWidth?: number;
+  cellHeight?: number;
+}
+
+const { items, cellWidth, cellHeight = 123 } = Astro.props;
+const columns = cellWidth ? `repeat(${items.length}, ${cellWidth}px)` : `repeat(${items.length}, 1fr)`;
+---
+
+<div
+  class:list={['stats', { fill: !cellWidth }]}
+  style={`--stats-columns: ${columns}; --cell-height: ${cellHeight - 2}px`}
+>
+  <div class="stats-rail" aria-hidden="true"></div>
+  <ul class="stats-grid">
+    {
+      items.map((s) => (
+        <li>
+          <span class="marker" aria-hidden="true" />
+          {s}
+        </li>
+      ))
+    }
+  </ul>
+  <div class="stats-rail" aria-hidden="true"></div>
+</div>
+
+<style>
+  .stats {
+    display: flex;
+    justify-content: center;
+  }
+
+  .stats-rail {
+    position: relative;
+    width: 30px;
+    flex: none;
+    border: 1px solid var(--border-soft);
+  }
+
+  .stats-rail:first-child {
+    border-right: 0;
+  }
+
+  .stats-rail:last-child {
+    border-left: 0;
+  }
+
+  .stats-rail::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url('/figma/hatch.png') top left / 595px 493px;
+    opacity: 0.1;
+  }
+
+  .stats-grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: var(--stats-columns);
+    border: 1px solid var(--border-soft);
+    text-align: left;
+  }
+
+  .fill .stats-grid {
+    flex: 1;
+  }
+
+  .stats-grid li {
+    min-height: var(--cell-height);
+    padding: 30px 30px 24px;
+    font-size: 14px;
+    line-height: 19px;
+    letter-spacing: -0.02em;
+    color: var(--muted);
+  }
+
+  .stats-grid li + li {
+    border-left: 1px solid var(--border-soft);
+  }
+
+  .stats-grid .marker {
+    margin-bottom: 14px;
+  }
+
+  @media (max-width: 960px) {
+    .stats-rail {
+      display: none;
+    }
+
+    .stats-grid {
+      grid-template-columns: 1fr;
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .fill .stats-grid {
+      grid-template-columns: 1fr 1fr;
+      max-width: none;
+    }
+
+    .stats-grid li {
+      min-height: 0;
+    }
+
+    .stats-grid li + li {
+      border-left: 0;
+      border-top: 1px solid var(--border-soft);
+    }
+
+    .fill .stats-grid li:nth-child(2) {
+      border-top: 0;
+      border-left: 1px solid var(--border-soft);
+    }
+
+    .fill .stats-grid li:nth-child(4) {
+      border-left: 1px solid var(--border-soft);
+    }
+  }
+</style>
