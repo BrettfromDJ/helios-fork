@@ -1,0 +1,99 @@
+---
+// Animated brand glow for blue blocks: a deep-blue band, a soft haze and a
+// drifting yellow glow, colors sampled from the design. By default the yellow
+// sits bottom-right; `mirrored` puts it bottom-left.
+// Fills its positioned parent; put content above it with position: relative.
+interface Props {
+  mirrored?: boolean;
+  base?: string;
+}
+
+const { mirrored = false, base = 'var(--blue-strong)' } = Astro.props;
+---
+
+<div class:list={['backdrop', { mirrored }]} style={`--glow-base: ${base}`} aria-hidden="true">
+  <span class="blob deep"></span>
+  <span class="blob haze"></span>
+  <span class="blob yellow"></span>
+</div>
+
+<style>
+  .backdrop {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: var(--glow-base);
+  }
+
+  .mirrored {
+    transform: scaleX(-1);
+  }
+
+  .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+    will-change: transform;
+  }
+
+  .deep {
+    left: 2%;
+    top: -70%;
+    width: 30%;
+    height: 240%;
+    background: radial-gradient(closest-side, #0474d0 35%, rgba(4, 116, 208, 0));
+    animation: drift-deep 18s ease-in-out infinite alternate;
+  }
+
+  .haze {
+    left: 32%;
+    top: -15%;
+    width: 60%;
+    height: 140%;
+    background: radial-gradient(closest-side, rgba(170, 205, 196, 0.95) 30%, rgba(170, 205, 196, 0));
+    animation: drift-haze 14s ease-in-out infinite alternate;
+  }
+
+  .yellow {
+    left: 64%;
+    top: 40%;
+    width: 38%;
+    height: 110%;
+    background: radial-gradient(closest-side, #f1d468 25%, rgba(241, 212, 104, 0.55) 60%, rgba(241, 212, 104, 0));
+    animation: drift-yellow 9s ease-in-out infinite alternate;
+  }
+
+  @keyframes drift-deep {
+    to {
+      transform: translate(4%, 3%) scale(1.06);
+    }
+  }
+
+  @keyframes drift-haze {
+    to {
+      transform: translate(-5%, 4%) scale(1.08);
+    }
+  }
+
+  @keyframes drift-yellow {
+    0% {
+      transform: translate(0, 0) scale(1);
+      opacity: 0.9;
+    }
+    50% {
+      transform: translate(-9%, -12%) scale(1.15);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-16%, 2%) scale(1.05);
+      opacity: 0.85;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .blob {
+      animation: none;
+    }
+  }
+</style>

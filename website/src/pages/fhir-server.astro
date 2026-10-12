@@ -6,6 +6,7 @@ import StatsStrip from '../components/StatsStrip.astro';
 import GlowBand from '../components/GlowBand.astro';
 import CodeBox from '../components/CodeBox.astro';
 import ArchitectureDiagram from '../components/ArchitectureDiagram.astro';
+import GlowBackdrop from '../components/GlowBackdrop.astro';
 import { BOOK_CALL, GITHUB, LINKEDIN, DOCKER_COMMAND } from '../data/site';
 
 const GET_STARTED = `${GITHUB}#quick-start`;
@@ -266,7 +267,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       </div>
       <!-- Phones: a stacked version, since the SVG's labels get too small -->
       <div class="diagram-stack" role="img" aria-label="CLI tools, embeddable libraries and standalone services all build on the Helios FHIR Server, which runs on SQLite, PostgreSQL, Elasticsearch, MongoDB or S3">
-        <Orb class="diagram-glow" />
+        <GlowBackdrop mirrored />
         <div class="stack-inner">
           {components.map((c) => <span class="glass">{c}</span>)}
           <span class="core">Helios FHIR Server</span>
@@ -320,7 +321,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       </div>
     </div>
     <div class="community-panel linkedin-panel">
-      <Orb class="community-glow" />
+      <GlowBackdrop mirrored base="var(--blue)" />
       <div class="panel-content">
         <img src="/figma/linkedin.svg" alt="" width="24" height="24" />
         <p>
@@ -868,15 +869,6 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     background: var(--blue-strong);
   }
 
-  .diagram-stack :global(.diagram-glow) {
-    left: 30%;
-    top: 85%;
-    width: 795px;
-    height: 784px;
-    transform: translate(-50%, -50%);
-    filter: blur(47px);
-  }
-
   .stack-inner {
     position: relative;
     display: flex;
@@ -1025,15 +1017,6 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
   .linkedin-panel strong {
     font-weight: 600;
     color: var(--white);
-  }
-
-  .linkedin-panel :global(.community-glow) {
-    left: 380px;
-    top: 329px;
-    width: 795px;
-    height: 784px;
-    transform: translate(-50%, -50%);
-    filter: blur(47px);
   }
 
   /* ---------- Up and running ---------- */
