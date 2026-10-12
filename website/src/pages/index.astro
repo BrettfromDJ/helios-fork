@@ -172,7 +172,8 @@ const steps = [
     <section class="container">
       <figure class="card quote" data-reveal="zoom">
         <div class="quote-glow" aria-hidden="true">
-          <img src="/figma/glow-yellow.svg" alt="" />
+          <span class="glow-main"></span>
+          <span class="glow-soft"></span>
         </div>
         <blockquote class="heading-lg">
           <span class="dim-ink">“Healthcare's most valuable data has been sitting unused for decades.</span>{' '}That just changed.”
@@ -499,20 +500,67 @@ const steps = [
     max-width: 629px;
   }
 
+  /* Warm yellow light from the top-right corner over the pale blue fade,
+     colors sampled from the design; it drifts and breathes slowly */
   .quote-glow {
     position: absolute;
-    left: calc(100% - 253px);
-    top: -346px;
-    width: 472px;
-    height: 472px;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
   }
 
-  .quote-glow img {
+  .quote-glow span {
     position: absolute;
-    inset: -105.93%;
-    width: 311.86%;
-    height: 311.86%;
-    max-width: none;
+    border-radius: 50%;
+    filter: blur(30px);
+  }
+
+  .glow-main {
+    right: -26%;
+    top: -70%;
+    width: 66%;
+    height: 160%;
+    background: radial-gradient(
+      closest-side,
+      rgba(253, 222, 128, 0.95),
+      rgba(253, 228, 150, 0.55) 45%,
+      rgba(253, 236, 180, 0)
+    );
+  }
+
+  .glow-soft {
+    right: -8%;
+    top: 30%;
+    width: 48%;
+    height: 110%;
+    background: radial-gradient(closest-side, rgba(244, 236, 196, 0.8), rgba(244, 236, 196, 0));
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .glow-main {
+      animation: quote-glow-main 10s ease-in-out infinite alternate;
+    }
+
+    .glow-soft {
+      animation: quote-glow-soft 13s ease-in-out infinite alternate;
+    }
+  }
+
+  @keyframes quote-glow-main {
+    50% {
+      transform: translate(-6%, 8%) scale(1.08);
+      opacity: 0.9;
+    }
+    100% {
+      transform: translate(-12%, 2%) scale(1.15);
+      opacity: 1;
+    }
+  }
+
+  @keyframes quote-glow-soft {
+    to {
+      transform: translate(-10%, -12%) scale(1.12);
+    }
   }
 
   /* ---------- Open source ---------- */
