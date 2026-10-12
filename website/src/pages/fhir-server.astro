@@ -349,10 +349,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
   </section>
 
   <GlowBand flipped padTop={131} padBottom={130}>
-    <div class="github-orb">
-      <Orb class="github-orb-fill" />
-      <img src="/figma/github-alt.svg" alt="" width="20" height="21" />
-    </div>
+    <img class="github-orb" src="/figma/github-orb.svg" alt="" width="61" height="60" />
     <h2 class="heading-lg">Visit the Helios Github</h2>
     <p class="band-text">
       The Helios FHIR Server is an implementation of the HL7® FHIR® standard, built in Rust for high
@@ -1063,20 +1060,9 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
 
   /* ---------- Visit the Github ---------- */
   .github-orb {
-    position: relative;
-    display: grid;
-    place-items: center;
-    width: 60.5px;
-    height: 59.7px;
+    width: 61px;
+    height: 60px;
     margin-bottom: 16px;
-  }
-
-  .github-orb :global(.github-orb-fill) {
-    inset: 0;
-  }
-
-  .github-orb img {
-    position: relative;
   }
 
   .band-text {
