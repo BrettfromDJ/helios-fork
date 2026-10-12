@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import Button from '../components/Button.astro';
 import StatsStrip from '../components/StatsStrip.astro';
 import GlowBand from '../components/GlowBand.astro';
+import AiBadge from '../components/AiBadge.astro';
 import { BOOK_CALL, GITHUB } from '../data/site';
 
 const stats = [
@@ -67,7 +68,7 @@ const steps = [
 
         <article class="card service-card lift-on-hover">
           <div class="ai-badge hover-lift" aria-hidden="true">
-            <img src="/figma/ai-badge.svg" alt="" width="258" height="258" />
+            <AiBadge />
           </div>
           <div class="service-copy">
             <h3>AI, put to work</h3>
@@ -308,7 +309,7 @@ const steps = [
   }
 
   /* The badge artwork extends past the outer ring for its glow */
-  .ai-badge img {
+  .ai-badge :global(.ai-badge-svg) {
     position: absolute;
     left: -59.5px;
     top: -60.5px;
