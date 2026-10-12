@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Button from '../components/Button.astro';
-import Orb from '../components/Orb.astro';
 import StatsStrip from '../components/StatsStrip.astro';
 import GlowBand from '../components/GlowBand.astro';
 import { BOOK_CALL, GITHUB } from '../data/site';
@@ -55,8 +54,7 @@ const steps = [
     <section class="services">
       <div class="container services-grid" data-stagger>
         <article class="card service-card lift-on-hover">
-          <img class="mockup hover-lift" src="/figma/resources-mockup.png" alt="" loading="lazy" />
-          <img class="card-sheen" src="/figma/card-sheen-1.svg" alt="" />
+          <img class="mockup hover-lift" src="/figma/search-mockup.png" alt="" width="493" height="489" loading="lazy" />
           <div class="service-copy">
             <h3>Software that makes it to production</h3>
             <p>
@@ -68,13 +66,8 @@ const steps = [
         </article>
 
         <article class="card service-card lift-on-hover">
-          <img class="card-sheen" src="/figma/card-sheen-2.svg" alt="" />
           <div class="ai-badge hover-lift" aria-hidden="true">
-            <Orb class="ai-glow" />
-            <Orb class="ai-orb" />
-            <span class="ai-ring ai-ring-outer"></span>
-            <span class="ai-ring ai-ring-inner"></span>
-            <img class="ai-sparkle" src="/figma/sparkle.svg" alt="" width="16" height="16" />
+            <img src="/figma/ai-badge.svg" alt="" width="258" height="258" />
           </div>
           <div class="service-copy">
             <h3>AI, put to work</h3>
@@ -118,13 +111,15 @@ const steps = [
           <figcaption>Dr. Sarah Thompson, Chief Medical Officer</figcaption>
         </figure>
 
-        <div class="card photo">
+        <!-- The image includes its own card corners, shadow and glow -->
+        <div class="photo">
           <img
-            src="/figma/clinician.png"
+            src="/figma/clinician.jpg"
             alt="A clinician at his desk reviewing work on a laptop"
+            width="652"
+            height="371"
             loading="lazy"
           />
-          <Orb class="photo-glow" />
         </div>
       </div>
     </section>
@@ -304,16 +299,6 @@ const steps = [
     max-width: none;
   }
 
-  .card-sheen {
-    position: absolute;
-    top: 0;
-    left: -0.62%;
-    width: 101.24%;
-    height: 102.54%;
-    max-width: none;
-    pointer-events: none;
-  }
-
   .ai-badge {
     position: absolute;
     right: 29px;
@@ -322,45 +307,14 @@ const steps = [
     height: 137px;
   }
 
-  .ai-badge :global(.ai-glow) {
-    left: 5px;
-    top: 5px;
-    width: 129px;
-    height: 127px;
-    filter: blur(27px);
-    opacity: 0.67;
-  }
-
-  .ai-badge :global(.ai-orb) {
-    left: 34.5px;
-    top: 34px;
-    width: 70px;
-    height: 69px;
-  }
-
-  .ai-ring {
+  /* The badge artwork extends past the outer ring for its glow */
+  .ai-badge img {
     position: absolute;
-    border: 1px solid var(--white);
-    border-radius: 1000px;
-  }
-
-  .ai-ring-outer {
-    inset: 0;
-    opacity: 0.2;
-  }
-
-  .ai-ring-inner {
-    left: 17px;
-    top: 17px;
-    width: 104px;
-    height: 103px;
-    opacity: 0.4;
-  }
-
-  .ai-sparkle {
-    position: absolute;
-    left: 61.5px;
-    top: 61px;
+    left: -59.5px;
+    top: -60.5px;
+    width: 258px;
+    height: 258px;
+    max-width: none;
   }
 
   /* ---------- Case study ---------- */
@@ -440,25 +394,13 @@ const steps = [
     color: rgba(16, 16, 16, 0.36);
   }
 
-  .photo {
-    min-height: 363px;
-  }
-
-  .photo > img {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .photo :global(.photo-glow) {
-    left: 212px;
-    top: -20px;
-    width: 825px;
-    height: 813px;
-    filter: blur(47px);
-    mix-blend-mode: hard-light;
+  /* The image has 4px of shadow margin on each side, so pull it out to line
+     its card up with the testimonial */
+  .photo img {
+    width: calc(100% + 8px);
+    max-width: none;
+    height: auto;
+    margin: -4px;
   }
 
   /* ---------- How it works ---------- */
@@ -746,10 +688,6 @@ const steps = [
     .service-card {
       display: flex;
       flex-direction: column-reverse;
-    }
-
-    .photo {
-      min-height: 280px;
     }
 
     .terminal-body {
