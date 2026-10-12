@@ -53,7 +53,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
   description="The FHIR server for clinical analytics, written in Rust. R4 through R6 in one system, complete FHIRPath and SQL-on-FHIR engines, and exports straight to Parquet. Free under MIT."
 >
   <!-- Hero -->
-  <section class="hero container">
+  <section class="hero container" data-stagger>
     <p class="eyebrow">OPEN SOURCE · MIT</p>
     <h1 class="heading-xl">
       The FHIR server for clinical analytics,{' '}<span class="dim-ink">written in Rust.</span>
@@ -74,7 +74,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
 
   <!-- Product screenshot -->
   <section class="container">
-    <div class="card screen">
+    <div class="card screen" data-reveal="zoom">
       <img
         src="/figma/dashboard.png"
         alt="The Helios FHIR Server dashboard: resource counts, export jobs, uptime and a chart of patients over time"
@@ -82,7 +82,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
         height="720"
       />
     </div>
-    <p class="caption screen-caption">A live instance running synthetic patient data. It resets nightly.</p>
+    <p class="caption screen-caption" data-reveal="fade">A live instance running synthetic patient data. It resets nightly.</p>
     <div class="fhir-stats">
       <StatsStrip items={stats} cellHeight={104} />
     </div>
@@ -90,9 +90,9 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
 
   <!-- Features -->
   <section class="container features">
-    <article class="card feature feature-wide feature-tall">
+    <article class="card feature feature-wide feature-tall lift-on-hover" data-reveal>
       <Orb class="feature-glow glow-sql" />
-      <img class="feature-mockup mockup-sql" src="/figma/sql-on-fhir.png" alt="" loading="lazy" />
+      <img class="feature-mockup mockup-sql hover-lift" src="/figma/sql-on-fhir.png" alt="" loading="lazy" />
       <div class="feature-copy">
         <h3>SQL-on-FHIR, built in.</h3>
         <p class="w-333">
@@ -102,14 +102,14 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       </div>
     </article>
 
-    <div class="feature-row three">
-      <article class="card feature">
+    <div class="feature-row three" data-stagger>
+      <article class="card feature lift-on-hover">
         <div class="feature-copy">
           <h3>A complete FHIRPath engine.</h3>
           <p class="w-308">The full FHIRPath 3.0.0 specification, with more than 100 built-in functions.</p>
         </div>
         <img
-          class="fhirpath-diagram"
+          class="fhirpath-diagram hover-lift"
           src="/figma/fhirpath-selection.png"
           alt="A FHIRPath expression selecting the official given names from a Patient"
           width="378"
@@ -118,13 +118,13 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
         />
       </article>
 
-      <article class="card feature">
+      <article class="card feature lift-on-hover">
         <Orb class="feature-glow glow-terminology" />
         <div class="feature-copy">
           <h3>A native terminology server.</h3>
           <p class="w-308">Code systems, value sets, and validation, served from the same platform.</p>
         </div>
-        <ul class="code-systems" aria-label="Example code systems">
+        <ul class="code-systems hover-lift" aria-label="Example code systems" data-stagger="250">
           {
             terminology.map(([code, name]) => (
               <li>
@@ -136,14 +136,14 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
         </ul>
       </article>
 
-      <article class="card feature">
+      <article class="card feature lift-on-hover">
         <div class="feature-copy">
           <h3>Storage that fits your stack.</h3>
           <p class="w-333">
             SQLite on a laptop, PostgreSQL, Elasticsearch, or MongoDB in production, S3 for scale.
           </p>
         </div>
-        <ul class="storage" aria-label="Supported storage backends">
+        <ul class="storage hover-lift" aria-label="Supported storage backends" data-stagger="250">
           {
             storage.map((s) => (
               <li>
@@ -155,17 +155,17 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       </article>
     </div>
 
-    <div class="feature-row two">
-      <article class="card feature feature-tall">
+    <div class="feature-row two" data-stagger>
+      <article class="card feature feature-tall lift-on-hover">
         <div class="feature-copy">
           <h3>Every FHIR version, one server</h3>
           <p>Work with R4, R4B, R5, and R6 data in the same application.</p>
         </div>
       </article>
 
-      <article class="card feature feature-tall">
+      <article class="card feature feature-tall lift-on-hover">
         <Orb class="feature-glow glow-security" />
-        <img class="feature-mockup mockup-security" src="/figma/security-mockup.png" alt="" loading="lazy" />
+        <img class="feature-mockup mockup-security hover-lift" src="/figma/security-mockup.png" alt="" loading="lazy" />
         <div class="feature-copy">
           <h3>Security by standard.</h3>
           <p>SMART on FHIR authorization, BALP-compliant audit logging, and multi-tenancy.</p>
@@ -173,14 +173,14 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       </article>
     </div>
 
-    <div class="feature-row two">
-      <article class="card feature">
+    <div class="feature-row two" data-stagger>
+      <article class="card feature lift-on-hover">
         <Orb class="feature-glow glow-pipelines" />
         <div class="feature-copy">
           <h3>Ready for your pipelines.</h3>
           <p class="w-271 nudge-left">Bulk Data Export and CDS Hooks, ready for the systems around you.</p>
         </div>
-        <div class="export-ui" aria-hidden="true">
+        <div class="export-ui hover-lift" aria-hidden="true">
           <div class="export-options">
             <div class="export-option selected">
               <span class="radio"></span>
@@ -215,7 +215,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
         </div>
       </article>
 
-      <article class="card feature">
+      <article class="card feature lift-on-hover">
         <div class="feature-copy">
           <h3>Subscriptions</h3>
           <p class="w-257">
@@ -223,12 +223,12 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
             changes.
           </p>
         </div>
-        <ul class="sub-tiles" aria-hidden="true">
+        <ul class="sub-tiles" aria-hidden="true" data-stagger="250">
           {
             subscriptionTiles.map((t) => (
               <li>
                 <span class="sub-label">
-                  {t.dot && <img src={t.dot} alt="" width="8" height="8" />}
+                  {t.dot && <img class:list={[{ pulse: t.label === 'ACTIVE' }]} src={t.dot} alt="" width="8" height="8" />}
                   {t.label}
                 </span>
                 <span class="sub-value">{t.value}</span>
@@ -243,8 +243,8 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
 
   <!-- What people build -->
   <section class="build">
-    <p class="eyebrow container">WHAT PEOPLE BUILD</p>
-    <div class="marquee">
+    <p class="eyebrow container" data-reveal>WHAT PEOPLE BUILD</p>
+    <div class="marquee" data-reveal="fade" data-delay="150">
       <ul class="marquee-track">
         {[...useCases, ...useCases].map((u, i) => <li aria-hidden={i >= useCases.length ? 'true' : undefined}>{u}</li>)}
       </ul>
@@ -254,7 +254,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
   <!-- Use all of it -->
   <section class="parts rule-top">
     <div class="container parts-inner">
-      <div class="parts-copy">
+      <div class="parts-copy" data-reveal>
         <h2 class="heading-lg">Use all of it,{' '}<span class="dim-ink">or just the parts you need.</span></h2>
         <p class="body-lg">
           The server runs as one system or as components: CLI tools for FHIRPath and SQL-on-FHIR,
@@ -282,11 +282,11 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
   <!-- Implementation -->
   <section class="implementation">
     <div class="container">
-      <p class="eyebrow">IMPLEMENTATION</p>
-      <h2 class="heading-lg impl-title">
+      <p class="eyebrow" data-reveal>IMPLEMENTATION</p>
+      <h2 class="heading-lg impl-title" data-reveal data-delay="100">
         Run it yourself,{' '}<span class="ink-deep">or hire the team that wrote it.</span>
       </h2>
-      <div class="impl-grid">
+      <div class="impl-grid" data-stagger>
         <article class="card service-card">
           <div class="service-copy">
             <h3>Open source</h3>
@@ -309,7 +309,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     </div>
   </section>
 
-  <section class="community">
+  <section class="community" data-stagger>
     <div class="community-panel github-panel">
       <div class="panel-content">
         <img src="/figma/github.svg" alt="" width="24" height="24" />
@@ -334,7 +334,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
 
   <!-- Up and running -->
   <section class="running">
-    <div class="container">
+    <div class="container" data-stagger>
       <h2 class="heading-lg"><span class="dim-white">Up and running in</span>{' '}one command</h2>
       <div class="running-code">
         <CodeBox command={DOCKER_COMMAND} theme="dark" />
@@ -767,6 +767,24 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     line-height: 1.2;
     letter-spacing: -0.02em;
     color: var(--ink);
+  }
+
+  /* The ACTIVE status dot breathes */
+  .pulse {
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    50% {
+      opacity: 0.35;
+      transform: scale(0.8);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pulse {
+      animation: none;
+    }
   }
 
   .sub-note {

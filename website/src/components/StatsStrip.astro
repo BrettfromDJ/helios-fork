@@ -17,7 +17,7 @@ const columns = cellWidth ? `repeat(${items.length}, ${cellWidth}px)` : `repeat(
   style={`--stats-columns: ${columns}; --cell-height: ${cellHeight - 2}px`}
 >
   <div class="stats-rail" aria-hidden="true"></div>
-  <ul class="stats-grid">
+  <ul class="stats-grid" data-stagger="200">
     {
       items.map((s) => (
         <li>

@@ -21,7 +21,7 @@ const steps = [
 
 <Layout>
     <!-- Hero -->
-    <section class="hero container">
+    <section class="hero container" data-stagger>
       <p class="eyebrow">MEET HELIOS</p>
       <h1 class="heading-xl">
         <span class="dim">We build the healthcare software</span>{' '}you can’t afford to get wrong
@@ -42,7 +42,7 @@ const steps = [
 
     <!-- Problem statement -->
     <section class="statement rule-top">
-      <div class="container">
+      <div class="container" data-stagger>
         <span class="marker" aria-hidden="true"></span>
         <h2 class="heading-lg statement-text">
           <span class="dim">Healthcare technology leaders are being asked to</span>{' '}deliver more
@@ -53,9 +53,9 @@ const steps = [
 
     <!-- Services -->
     <section class="services">
-      <div class="container services-grid">
-        <article class="card service-card">
-          <img class="mockup" src="/figma/resources-mockup.png" alt="" loading="lazy" />
+      <div class="container services-grid" data-stagger>
+        <article class="card service-card lift-on-hover">
+          <img class="mockup hover-lift" src="/figma/resources-mockup.png" alt="" loading="lazy" />
           <img class="card-sheen" src="/figma/card-sheen-1.svg" alt="" />
           <div class="service-copy">
             <h3>Software that makes it to production</h3>
@@ -67,9 +67,9 @@ const steps = [
           </div>
         </article>
 
-        <article class="card service-card">
+        <article class="card service-card lift-on-hover">
           <img class="card-sheen" src="/figma/card-sheen-2.svg" alt="" />
-          <div class="ai-badge" aria-hidden="true">
+          <div class="ai-badge hover-lift" aria-hidden="true">
             <Orb class="ai-glow" />
             <Orb class="ai-orb" />
             <span class="ai-ring ai-ring-outer"></span>
@@ -91,7 +91,7 @@ const steps = [
     <!-- Case study -->
     <section id="case-studies" class="case container">
       <div class="case-head">
-        <div>
+        <div data-reveal>
           <h2 class="heading-lg case-title">
             <span class="dim-ink">From FHIR Strategy</span>{' '}to Production
           </h2>
@@ -101,13 +101,13 @@ const steps = [
             that today runs in more than 2,000 clinics and is integrated with seven EMRs.
           </p>
         </div>
-        <p class="big-stat">
-          <span class="big-number">2,000+</span>
+        <p class="big-stat" data-reveal data-delay="150">
+          <span class="big-number"><span data-count="2000">2,000</span>+</span>
           <span class="big-label">Clinics</span>
         </p>
       </div>
 
-      <div class="case-grid">
+      <div class="case-grid" data-stagger>
         <figure class="card testimonial">
           <blockquote>
             "Helios has transformed our clinic's operations. With seamless integration into our
@@ -132,8 +132,8 @@ const steps = [
     <!-- How it works -->
     <section class="how rule-top">
       <div class="container">
-        <h2 class="heading-lg">How it works</h2>
-        <ol class="steps">
+        <h2 class="heading-lg" data-reveal>How it works</h2>
+        <ol class="steps" data-stagger="100">
           {
             steps.map((s) => (
               <li>
@@ -158,7 +158,7 @@ const steps = [
     </GlowBand>
 
     <!-- Production -->
-    <section class="split split-section container">
+    <section class="split split-section container" data-stagger>
       <h2 class="heading-lg split-title">
         <span class="dim-light">Most healthcare software looks fine</span>{' '}in a demo.
       </h2>
@@ -174,7 +174,7 @@ const steps = [
     </section>
 
     <section class="container">
-      <figure class="card quote">
+      <figure class="card quote" data-reveal="zoom">
         <div class="quote-glow" aria-hidden="true">
           <img src="/figma/glow-yellow.svg" alt="" />
         </div>
@@ -187,7 +187,7 @@ const steps = [
     <!-- Open source -->
     <section id="open-source" class="open-source">
       <div class="container">
-        <div class="split split-dark">
+        <div class="split split-dark" data-stagger>
           <div>
             <h2 class="heading-lg">
               <span class="dim-white">We build</span>{' '}in the open.
@@ -206,13 +206,13 @@ const steps = [
           </p>
         </div>
 
-        <div class="terminal">
+        <div class="terminal" data-reveal="zoom">
           <div class="terminal-bar">
             <img src="/figma/terminal-dots.svg" alt="" width="32" height="8" />
             <span>[FHIR SERVER DEMO CAPTURE]</span>
           </div>
           <div class="terminal-body">
-            <code><span class="prompt">$ </span>docker run -p 8080:8080 ghcr.io/heliossoftware/hfs:latest</code>
+            <code><span class="prompt">$ </span><span class="typed">docker run -p 8080:8080 ghcr.io/heliossoftware/hfs:latest</span></code>
             <div class="terminal-lines" aria-hidden="true">
               <span style="width: 456px"></span>
               <span style="width: 579px"></span>
@@ -649,6 +649,55 @@ const steps = [
     height: 5px;
     background: linear-gradient(to right, rgba(255, 255, 255, 0), var(--white));
     opacity: 0.4;
+  }
+
+  /* Terminal types the command, then the output lines draw in */
+  :global(.motion) .typed {
+    display: inline-block;
+    vertical-align: bottom;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 0;
+    border-right: 2px solid transparent;
+  }
+
+  :global(.motion) .terminal:global(.in) .typed {
+    animation:
+      type 1.8s steps(57) 0.6s forwards,
+      caret 0.7s step-end 0.6s 4;
+  }
+
+  :global(.motion) .terminal-lines span {
+    transform: scaleX(0);
+    transform-origin: left;
+  }
+
+  :global(.motion) .terminal:global(.in) .terminal-lines span {
+    animation: draw-line 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+  }
+
+  .terminal-lines span:nth-child(1) { animation-delay: 2.5s !important; }
+  .terminal-lines span:nth-child(2) { animation-delay: 2.65s !important; }
+  .terminal-lines span:nth-child(3) { animation-delay: 2.8s !important; }
+  .terminal-lines span:nth-child(4) { animation-delay: 2.95s !important; }
+  .terminal-lines span:nth-child(5) { animation-delay: 3.1s !important; }
+
+  @keyframes type {
+    to {
+      width: calc(57 * (1ch - 0.02em));
+    }
+  }
+
+  @keyframes caret {
+    50% {
+      border-right-color: var(--blue);
+    }
+  }
+
+  @keyframes draw-line {
+    to {
+      transform: scaleX(1);
+    }
   }
 
   /* ---------- Responsive ---------- */

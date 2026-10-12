@@ -14,7 +14,7 @@ const { id, flipped = false, padTop, padBottom } = Astro.props;
 
 <section id={id} class="glow-band" style={`--pad-top: ${padTop}px; --pad-bottom: ${padBottom}px`}>
   <GlowBackdrop mirrored={!flipped} />
-  <div class="container band-content">
+  <div class="container band-content" data-stagger>
     <slot />
   </div>
 </section>

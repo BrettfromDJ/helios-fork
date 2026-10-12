@@ -30,6 +30,12 @@ const {
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <title>{title}</title>
+    <script is:inline>
+      // Turn on motion before first paint so revealed content doesn't flash.
+      if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.documentElement.classList.add('motion');
+      }
+    </script>
   </head>
   <body>
     <SiteHeader />
@@ -37,5 +43,9 @@ const {
       <slot />
     </main>
     <SiteFooter />
+    <script>
+      import { initMotion } from '../scripts/motion';
+      initMotion();
+    </script>
   </body>
 </html>

@@ -10,7 +10,7 @@ const { href, variant = 'primary', arrow = false } = Astro.props;
 
 <a href={href} class:list={['button', variant]}>
   <slot />
-  {arrow && <img src="/figma/arrow-right-white.svg" alt="" width="12" height="12" />}
+  {arrow && <img class="arrow" src="/figma/arrow-right-white.svg" alt="" width="12" height="12" />}
 </a>
 
 <style>
@@ -32,6 +32,20 @@ const { href, variant = 'primary', arrow = false } = Astro.props;
 
   .button:hover {
     filter: brightness(1.06);
+  }
+
+  .arrow {
+    transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .button:hover .arrow {
+    transform: translateX(3px);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .button:hover .arrow {
+      transform: none;
+    }
   }
 
   .button:focus-visible {

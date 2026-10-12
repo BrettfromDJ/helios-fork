@@ -67,8 +67,30 @@ import { BOOK_CALL, nav } from '../data/site';
     color: var(--ink);
   }
 
+  nav a {
+    position: relative;
+  }
+
+  /* Underline slides in from the left on hover */
+  nav a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 1.5px;
+    background: var(--blue-strong);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
   nav a:hover {
     color: var(--blue-strong);
+  }
+
+  nav a:hover::after {
+    transform: scaleX(1);
   }
 
   @media (max-width: 1100px) {
