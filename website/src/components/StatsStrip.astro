@@ -51,12 +51,13 @@ const columns = cellWidth ? `repeat(${items.length}, ${cellWidth}px)` : `repeat(
     border-left: 0;
   }
 
+  /* Diagonal hatching: 1px lines, 17px apart down the rail (12px apart
+     measured across the lines), as in the design */
   .stats-rail::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: url('/figma/hatch.png') top left / 595px 493px;
-    opacity: 0.1;
+    background: repeating-linear-gradient(135deg, #e5e5e5 0 1px, transparent 1px 12px);
   }
 
   .stats-grid {
