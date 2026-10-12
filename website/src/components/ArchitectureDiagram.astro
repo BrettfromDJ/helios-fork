@@ -1,0 +1,291 @@
+---
+// "Use all of it" graphic, redrawn as an animated SVG.
+// Builds in when it scrolls into view, then loops: pulses travel from each
+// component into the server and down to the storage backends.
+// Animation is skipped when the visitor prefers reduced motion.
+
+const components = [
+  { label: 'CLI tools', x: 62 },
+  { label: 'Embeddable libraries', x: 287 },
+  { label: 'Standalone services', x: 512 },
+];
+
+// Pill positions/widths measured from the design
+const backends = [
+  { label: 'SQLite', x: 128, w: 73 },
+  { label: 'PostgresSQL', x: 218, w: 109 },
+  { label: 'Elasticsearch', x: 346, w: 110 },
+  { label: 'MongoDB', x: 474, w: 91 },
+  { label: 'S3', x: 583, w: 48 },
+];
+
+const CYCLE = 2.5; // seconds per pulse cycle
+const pulsePaths = ['M155 147 V166 H382 V186', 'M382 147 V186', 'M609 147 V166 H382 V186'];
+---
+
+<div class="arch">
+  <svg
+    viewBox="0 0 759 400"
+    role="img"
+    aria-labelledby="arch-title"
+    data-arch
+  >
+    <title id="arch-title">
+      CLI tools, embeddable libraries and standalone services all build on the Helios FHIR Server,
+      which runs on SQLite, PostgreSQL, Elasticsearch, MongoDB or S3.
+    </title>
+    <defs>
+      <clipPath id="arch-clip">
+        <rect width="759" height="400" rx="16" />
+      </clipPath>
+      <filter id="arch-soft" filterUnits="userSpaceOnUse" x="-300" y="-300" width="1359" height="1000">
+        <feGaussianBlur stdDeviation="48" />
+      </filter>
+      <filter id="arch-core-shadow" filterUnits="userSpaceOnUse" x="120" y="120" width="520" height="320">
+        <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#000" flood-opacity="0.34" />
+        <feDropShadow dx="0" dy="29" stdDeviation="14" flood-color="#000" flood-opacity="0.3" />
+        <feDropShadow dx="0" dy="66" stdDeviation="20" flood-color="#000" flood-opacity="0.18" />
+      </filter>
+      <filter id="arch-glow" x="-200%" y="-200%" width="500%" height="500%">
+        <feGaussianBlur stdDeviation="3" />
+      </filter>
+      <linearGradient id="arch-glass" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0.19" stop-color="#fffcf4" stop-opacity="0.4" />
+        <stop offset="0.86" stop-color="#fff1e5" stop-opacity="0.16" />
+      </linearGradient>
+      <linearGradient id="arch-core" x1="0" y1="0" x2="0.35" y2="1">
+        <stop offset="0.19" stop-color="#000f17" />
+        <stop offset="0.86" stop-color="#000f17" stop-opacity="0.82" />
+      </linearGradient>
+      <radialGradient id="arch-core-halo">
+        <stop offset="0" stop-color="#7fd3ff" stop-opacity="0.9" />
+        <stop offset="1" stop-color="#7fd3ff" stop-opacity="0" />
+      </radialGradient>
+    </defs>
+
+    <g clip-path="url(#arch-clip)">
+      <!-- Background: brand blue with drifting soft light, matching the Helios orb -->
+      <rect width="759" height="400" fill="#12a8f7" />
+      <g filter="url(#arch-soft)" class="bg-glow">
+        <ellipse cx="640" cy="290" rx="200" ry="230" fill="#0478cc">
+          <animateTransform attributeName="transform" type="translate" values="0 0; -30 -20; 0 0" dur="18s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="400" cy="70" rx="160" ry="70" fill="#1f8fd0" opacity="0.7" />
+        <ellipse cx="220" cy="245" rx="235" ry="160" fill="#a3cec6" opacity="0.9">
+          <animateTransform attributeName="transform" type="translate" values="0 0; 25 -15; 0 0" dur="22s" repeatCount="indefinite" />
+        </ellipse>
+        <ellipse cx="45" cy="415" rx="175" ry="125" fill="#ecd677">
+          <animateTransform attributeName="transform" type="translate" values="0 0; 20 -18; 0 0" dur="16s" repeatCount="indefinite" />
+        </ellipse>
+      </g>
+
+      <!-- Connectors -->
+      <g class="lines" fill="none" stroke="#ffffff" stroke-opacity="0.6" stroke-width="1.2">
+        <path class="draw" pathLength="1" d="M155 153 V166 H609 V153" />
+        <path class="draw" pathLength="1" d="M382 153 V186" />
+        <path class="draw draw-late" pathLength="1" d="M382 270 V297" />
+      </g>
+
+      <!-- Component boxes -->
+      {
+        components.map((c, i) => (
+          <g class="rise" style={`--i: ${i}`}>
+            <rect x={c.x} y="63" width="185" height="84" rx="19.7" fill="url(#arch-glass)" stroke="#ffffff" stroke-opacity="0.28" />
+            <text x={c.x + 92.5} y="105" class="label">{c.label}</text>
+          </g>
+        ))
+      }
+
+      <!-- Pulses from each component into the server -->
+      <g class="pulses">
+        {
+          pulsePaths.map((d, i) => (
+            <circle r="3.5" fill="#ffffff" filter="url(#arch-glow)" opacity="0">
+              <animateMotion
+                path={d}
+                dur={`${CYCLE}s`}
+                begin={`${i * 0.2}s`}
+                repeatCount="indefinite"
+                keyPoints="0;1;1"
+                keyTimes="0;0.45;1"
+                calcMode="linear"
+              />
+              <animate
+                attributeName="opacity"
+                values="0;1;1;0;0"
+                keyTimes="0;0.05;0.4;0.46;1"
+                dur={`${CYCLE}s`}
+                begin={`${i * 0.2}s`}
+                repeatCount="indefinite"
+              />
+            </circle>
+          ))
+        }
+        <circle r="3.5" fill="#ffffff" filter="url(#arch-glow)" opacity="0">
+          <animateMotion path="M382 270 V300" dur={`${CYCLE}s`} begin="1.5s" repeatCount="indefinite" keyPoints="0;1;1" keyTimes="0;0.25;1" calcMode="linear" />
+          <animate attributeName="opacity" values="0;1;1;0;0" keyTimes="0;0.04;0.2;0.27;1" dur={`${CYCLE}s`} begin="1.5s" repeatCount="indefinite" />
+        </circle>
+      </g>
+
+      <!-- Server -->
+      <g class="pop core">
+        <ellipse cx="380" cy="228" rx="170" ry="70" fill="url(#arch-core-halo)" opacity="0">
+          <animate attributeName="opacity" values="0;0;0.45;0" keyTimes="0;0.4;0.55;1" dur={`${CYCLE}s`} repeatCount="indefinite" />
+        </ellipse>
+        <rect x="247" y="186" width="266" height="84" rx="19.7" fill="url(#arch-core)" filter="url(#arch-core-shadow)" />
+        <text x="380" y="228" class="label">Helios FHIR Server</text>
+      </g>
+
+      <!-- Storage backends; each lights up in turn as a pulse arrives -->
+      {
+        backends.map((b, i) => (
+          <g class="pill" style={`--i: ${i}`}>
+            <rect x={b.x} y="304" width={b.w} height="32" rx="16" fill="#ffffff" fill-opacity="0" stroke="#ffffff" stroke-opacity="0.4">
+              <animate
+                attributeName="fill-opacity"
+                values="0;0.28;0.28;0;0"
+                keyTimes="0;0.02;0.1;0.18;1"
+                dur={`${CYCLE * backends.length}s`}
+                begin={`${2.1 + i * CYCLE}s`}
+                repeatCount="indefinite"
+              />
+            </rect>
+            <text x={b.x + b.w / 2} y="320" class="pill-label">{b.label}</text>
+          </g>
+        ))
+      }
+    </g>
+  </svg>
+</div>
+
+<script>
+  // Hold every animation until the graphic is on screen, then build it in and
+  // start the loop. Visitors who prefer reduced motion get the finished state.
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  for (const svg of document.querySelectorAll<SVGSVGElement>('svg[data-arch]')) {
+    svg.pauseAnimations();
+    if (reduce) continue;
+    svg.classList.add('is-armed');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        observer.disconnect();
+        svg.classList.add('is-visible');
+        // Let the build-in finish before the pulses start
+        setTimeout(() => svg.unpauseAnimations(), 1400);
+      },
+      { threshold: 0.35 },
+    );
+    observer.observe(svg);
+  }
+</script>
+
+<style>
+  .arch svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-card);
+  }
+
+  .label {
+    fill: #ffffff;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    letter-spacing: -0.02em;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  .pill-label {
+    fill: #ffffff;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    font-size: 13px;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  /* ---------- Build-in ---------- */
+  /* Pieces are only hidden once the script has armed the graphic, so it still
+     shows without JavaScript or with reduced motion. */
+  .rise,
+  .pop,
+  .pill {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .is-armed .rise,
+  .is-armed .pop,
+  .is-armed .pill {
+    opacity: 0;
+  }
+
+  .is-armed .rise {
+    transform: translateY(14px);
+  }
+
+  .is-armed .pop {
+    transform: scale(0.92);
+  }
+
+  .is-armed .pill {
+    transform: translateY(6px);
+  }
+
+  .is-armed .draw {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+
+  .is-armed .pulses {
+    opacity: 0;
+  }
+
+  .is-visible .rise {
+    animation: rise 0.6s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    animation-delay: calc(var(--i) * 0.12s);
+  }
+
+  .is-visible .draw {
+    animation: draw 0.5s ease-out 0.45s forwards;
+  }
+
+  .is-visible .draw-late {
+    animation-delay: 0.95s;
+  }
+
+  .is-visible .pop {
+    animation: rise 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) 0.7s forwards;
+  }
+
+  .is-visible .pill {
+    animation: rise 0.4s ease-out forwards;
+    animation-delay: calc(1.05s + var(--i) * 0.07s);
+  }
+
+  .is-visible .pulses {
+    animation: fade-in 0.3s 1.4s forwards;
+  }
+
+  @keyframes rise {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @keyframes fade-in {
+    to {
+      opacity: 1;
+    }
+  }
+</style>

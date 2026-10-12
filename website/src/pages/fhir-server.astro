@@ -5,6 +5,7 @@ import Orb from '../components/Orb.astro';
 import StatsStrip from '../components/StatsStrip.astro';
 import GlowBand from '../components/GlowBand.astro';
 import CodeBox from '../components/CodeBox.astro';
+import ArchitectureDiagram from '../components/ArchitectureDiagram.astro';
 import { BOOK_CALL, GITHUB, LINKEDIN, DOCKER_COMMAND } from '../data/site';
 
 const GET_STARTED = `${GITHUB}#quick-start`;
@@ -260,19 +261,15 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
           grow into a production cluster without changing platforms.
         </p>
       </div>
-      <div class="diagram" role="img" aria-label="CLI tools, embeddable libraries and standalone services all build on the Helios FHIR Server, which runs on SQLite, PostgreSQL, Elasticsearch, MongoDB or S3">
+      <div class="diagram-svg">
+        <ArchitectureDiagram />
+      </div>
+      <!-- Phones: a stacked version, since the SVG's labels get too small -->
+      <div class="diagram-stack" role="img" aria-label="CLI tools, embeddable libraries and standalone services all build on the Helios FHIR Server, which runs on SQLite, PostgreSQL, Elasticsearch, MongoDB or S3">
         <Orb class="diagram-glow" />
-        <div class="diagram-inner">
-          <div class="diagram-top">
-            {components.map((c) => <span class="glass">{c}</span>)}
-          </div>
-          <div class="connectors">
-            <img class="connector-left" src="/figma/connector-left.svg" alt="" />
-            <img class="connector-right" src="/figma/connector-right.svg" alt="" />
-            <img class="connector-mid" src="/figma/connector-vertical.svg" alt="" />
-          </div>
+        <div class="stack-inner">
+          {components.map((c) => <span class="glass">{c}</span>)}
           <span class="core">Helios FHIR Server</span>
-          <img class="connector-down" src="/figma/connector-vertical.svg" alt="" />
           <div class="backends">
             {backends.map((b) => <span>{b}</span>)}
           </div>
@@ -859,118 +856,76 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     margin-top: 18px;
   }
 
-  .diagram {
-    position: relative;
+  .diagram-svg {
     flex: none;
     width: 759px;
-    height: 400px;
+    max-width: 100%;
+  }
+
+  .diagram-stack {
+    display: none;
+    position: relative;
     overflow: hidden;
+    width: 100%;
     border-radius: var(--radius-card);
     background: var(--blue-strong);
   }
 
-  .diagram :global(.diagram-glow) {
-    left: 380px;
-    top: 329px;
+  .diagram-stack :global(.diagram-glow) {
+    left: 30%;
+    top: 85%;
     width: 795px;
     height: 784px;
     transform: translate(-50%, -50%);
     filter: blur(47px);
   }
 
-  .diagram-inner {
-    position: absolute;
-    left: 62px;
-    top: 63px;
-    width: 635px;
-    height: 275px;
+  .stack-inner {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 32px 20px;
     color: var(--white);
     font-size: 16px;
     line-height: 24px;
     letter-spacing: -0.02em;
   }
 
-  .diagram-top {
-    display: flex;
-    justify-content: space-between;
-  }
-
   .glass {
     display: grid;
     place-items: center;
     width: 185px;
-    height: 84px;
+    height: 64px;
     border-radius: 19.7px;
     background: linear-gradient(157deg, rgba(255, 252, 244, 0.4) 19%, rgba(255, 241, 229, 0.16) 86%);
     -webkit-backdrop-filter: blur(12.3px);
     backdrop-filter: blur(12.3px);
     box-shadow:
-      12px 12px 120px rgba(138, 0, 0, 0.05),
       inset 0 1.2px 1.8px rgba(255, 255, 255, 0.25),
       inset 0 -1.2px 1.8px rgba(255, 255, 255, 0.1);
   }
 
-  .connectors img,
-  .connector-down {
-    position: absolute;
-    max-width: none;
-  }
-
-  .connector-left {
-    left: 93px;
-    top: 90px;
-    width: 227px;
-    height: 27px;
-  }
-
-  .connector-right {
-    left: 320px;
-    top: 90px;
-    width: 227px;
-    height: 27px;
-    transform: scaleX(-1);
-  }
-
-  .connector-mid,
-  .connector-down {
-    left: 319.5px;
-    width: 1px;
-    height: 27px;
-  }
-
-  .connector-mid {
-    top: 90px;
-  }
-
-  .connector-down {
-    top: 209px;
-  }
-
   .core {
-    position: absolute;
-    left: 185px;
-    top: 123px;
     display: grid;
     place-items: center;
     width: 266px;
-    height: 84px;
+    height: 72px;
+    margin-top: 8px;
     border-radius: 19.7px;
     background: linear-gradient(164deg, var(--ink-deep) 19%, rgba(0, 15, 23, 0.7) 86%);
     box-shadow:
-      0 183px 51px rgba(0, 0, 0, 0.01),
-      0 117px 47px rgba(0, 0, 0, 0.05),
-      0 66px 40px rgba(0, 0, 0, 0.18),
       0 29px 29px rgba(0, 0, 0, 0.3),
       0 7px 16px rgba(0, 0, 0, 0.34);
   }
 
   .backends {
-    position: absolute;
-    left: 50%;
-    top: 241px;
-    transform: translateX(-50%);
     display: flex;
-    gap: 16px;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 8px;
   }
 
   .backends span {
@@ -1139,7 +1094,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       align-items: flex-start;
     }
 
-    .diagram {
+    .diagram-svg {
       align-self: center;
     }
   }
@@ -1158,51 +1113,15 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     }
   }
 
-  @media (max-width: 800px) {
-    .diagram {
-      width: 100%;
-      height: auto;
-      min-height: 0;
-    }
-
-    .diagram-inner {
-      position: relative;
-      left: auto;
-      top: auto;
-      width: auto;
-      height: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      padding: 32px 20px;
-    }
-
-    .diagram-top {
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .connectors,
-    .connector-down {
+  @media (max-width: 640px) {
+    .diagram-svg {
       display: none;
     }
 
-    .core,
-    .backends {
-      position: static;
-      transform: none;
+    .diagram-stack {
+      display: block;
     }
 
-    .backends {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-    }
-  }
-
-  @media (max-width: 640px) {
     .feature {
       padding: 28px;
     }
