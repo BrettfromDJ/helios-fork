@@ -1,7 +1,6 @@
 ---
-// "AI, put to work" badge (supplied artwork), inlined so its layers can
-// animate: the glow breathes, the orb turns, the rings pulse, ripples spread
-// outward and the sparkle twinkles. Still for reduced-motion visitors.
+// "AI, put to work" badge (supplied artwork), inlined so ripples can spread
+// outward from the orb. Still for reduced-motion visitors.
 ---
 
 <svg class="ai-badge-svg" width="258" height="258" viewBox="0 0 258 258" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
@@ -41,66 +40,19 @@
     overflow: visible;
   }
 
-  .glow,
-  .orb,
-  .ring,
-  .ripple,
-  .sparkle {
+  .ripple {
+    opacity: 0;
     transform-box: fill-box;
     transform-origin: center;
   }
 
-  .ripple {
-    opacity: 0;
-  }
-
   @media (prefers-reduced-motion: no-preference) {
-    .glow {
-      animation: breathe 4.5s ease-in-out infinite;
-    }
-
-    .orb {
-      animation: turn 14s linear infinite;
-    }
-
-    .ring-outer {
-      animation: ring-pulse 4.5s ease-in-out infinite;
-    }
-
-    .ring-inner {
-      animation: ring-pulse 4.5s ease-in-out 0.4s infinite;
-    }
-
     .ripple {
       animation: ripple 3.6s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
     }
 
     .ripple-2 {
       animation-delay: 1.8s;
-    }
-
-    .sparkle {
-      animation: twinkle 2.6s ease-in-out infinite;
-    }
-  }
-
-  @keyframes breathe {
-    50% {
-      transform: scale(1.14);
-      opacity: 0.9;
-    }
-  }
-
-  @keyframes turn {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-
-  @keyframes ring-pulse {
-    50% {
-      transform: scale(1.04);
-      opacity: 0.55;
     }
   }
 
@@ -112,16 +64,6 @@
     100% {
       transform: scale(2.3);
       opacity: 0;
-    }
-  }
-
-  @keyframes twinkle {
-    0%,
-    100% {
-      transform: scale(1) rotate(0deg);
-    }
-    50% {
-      transform: scale(1.25) rotate(45deg);
     }
   }
 </style>
