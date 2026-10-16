@@ -7,6 +7,7 @@ import GlowBand from '../components/GlowBand.astro';
 import CodeBox from '../components/CodeBox.astro';
 import ArchitectureDiagram from '../components/ArchitectureDiagram.astro';
 import GlowBackdrop from '../components/GlowBackdrop.astro';
+import ProductDemo from '../components/ProductDemo.astro';
 import { BOOK_CALL, GITHUB, LINKEDIN, DOCKER_COMMAND } from '../data/site';
 
 const GET_STARTED = `${GITHUB}#quick-start`;
@@ -72,17 +73,12 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     <p class="caption hero-caption">From the engineers building some of the largest FHIR applications.</p>
   </section>
 
-  <!-- Product screenshot -->
+  <!-- Product walkthrough: live HTML, scripted like a screen recording -->
   <section class="container">
     <div class="card screen" data-reveal="zoom">
-      <img
-        src="/figma/dashboard.png"
-        alt="The Helios FHIR Server dashboard: resource counts, export jobs, uptime and a chart of patients over time"
-        width="1320"
-        height="720"
-      />
+      <ProductDemo />
     </div>
-    <p class="caption screen-caption" data-reveal="fade">A live instance running synthetic patient data. It resets nightly.</p>
+    <p class="caption screen-caption" data-reveal="fade">A walkthrough of the Helios FHIR Server console, using synthetic patient data.</p>
     <div class="fhir-stats">
       <StatsStrip items={stats} cellHeight={104} />
     </div>
@@ -396,11 +392,6 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
   .screen {
     margin-top: 40px;
     background: linear-gradient(to bottom, var(--white), #f8f8f8);
-  }
-
-  .screen img {
-    width: 100%;
-    height: auto;
   }
 
   .screen-caption {
