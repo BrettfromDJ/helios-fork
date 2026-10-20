@@ -1,0 +1,338 @@
+---
+// Scripted close-up of the Helios console's FHIR version switcher, built from
+// real elements (no video). A fake cursor opens the switcher at the bottom
+// of the sidebar and picks another version; each loop picks the next one.
+// Designed on a 360x320 canvas and scaled to fit its container.
+import DemoCursor from './DemoCursor.astro';
+import { icon } from '../data/demoIcons';
+
+const items = [
+  ['search', 'Search Parameters'],
+  ['panels', 'Compartments'],
+  null,
+  ['book', 'Terminology'],
+  ['sync', 'Subscriptions'],
+];
+const versions = ['R4', 'R4B', 'R5', 'R6'];
+---
+
+<div class="demo" data-demo="version">
+  <div class="canvas" aria-hidden="true">
+    <ul class="list">
+      {
+        items.map((item) =>
+          item ? (
+            <li>
+              <span class="ic" set:html={icon(item[0])} />
+              {item[1]}
+            </li>
+          ) : (
+            <li class="label">TOOLS</li>
+          ),
+        )
+      }
+    </ul>
+
+    <div class="menu" data-menu>
+      <span class="menu-label">FHIR VERSION</span>
+      {
+        versions.map((v) => (
+          <span class:list={['row', { on: v === 'R4' }]} data-version={v} data-hover>
+            <span class="tile" set:html={icon('version')} />
+            {v}
+            <span class="check" set:html={icon('check')} />
+          </span>
+        ))
+      }
+    </div>
+
+    <span class="switcher" data-switcher data-hover>
+      <span class="ic" set:html={icon('version')} />
+      FHIR <b data-current>R4</b>
+      <span class="updown" set:html={icon('updown')} />
+    </span>
+
+    <DemoCursor />
+  </div>
+</div>
+
+<script>
+  // Drives the walkthrough on the 360x320 canvas (see scripts/demo.ts).
+  import { setupDemo, type DemoKit } from '../scripts/demo';
+
+  for (const demo of document.querySelectorAll<HTMLElement>('[data-demo="version"]')) {
+    const menu = demo.querySelector<HTMLElement>('[data-menu]')!;
+    const current = demo.querySelector<HTMLElement>('[data-current]')!;
+    const hoverables = [...demo.querySelectorAll<HTMLElement>('[data-hover]')];
+    const rows = [...demo.querySelectorAll<HTMLElement>('[data-version]')];
+
+    // Each pass switches to the next version
+    const picks = ['R5', 'R4B', 'R6'];
+    let pass = 0;
+
+    const select = (v: string) => {
+      rows.forEach((r) => r.classList.toggle('on', r.dataset.version === v));
+      current.textContent = v;
+    };
+
+    // Highlight whatever the cursor is over
+    const onMove = ({ at, pos }: DemoKit) => {
+      for (const el of hoverables) {
+        const a = at(el, 0, 0);
+        const b = at(el, 1, 1);
+        el.classList.toggle('hover', pos.x >= a.x && pos.x <= b.x && pos.y >= a.y && pos.y <= b.y);
+      }
+    };
+
+    const reset = ({ pos }: DemoKit) => {
+      menu.classList.remove('open');
+      select('R4');
+      pos.x = 290;
+      pos.y = 150;
+    };
+
+    const run = async ({ $, at, sleep, moveTo, click }: DemoKit, gen: number) => {
+      const pick = picks[pass++ % picks.length];
+      await sleep(700, gen);
+
+      // Open the switcher
+      const switcher = $('[data-switcher]');
+      await moveTo(at(switcher, 0.55, 0.55), 1100, gen);
+      await sleep(250, gen);
+      await click(switcher, gen);
+      menu.classList.add('open');
+      await sleep(900, gen);
+
+      // Run down the list to the new version and pick it
+      const target = $(`[data-version="${pick}"]`);
+      await moveTo(at($('[data-version="R4"]'), 0.6), 600, gen);
+      await sleep(200, gen);
+      await moveTo(at(target, 0.6), 700, gen);
+      await sleep(350, gen);
+      await click(target, gen);
+      select(pick);
+      await sleep(450, gen);
+      menu.classList.remove('open');
+      switcher.classList.add('flash');
+      await sleep(600, gen);
+      switcher.classList.remove('flash');
+      await moveTo({ x: 300, y: 140 }, 900, gen);
+      await sleep(1600, gen);
+    };
+
+    setupDemo(demo, { width: 360, reset, run, onMove });
+  }
+</script>
+
+<style>
+  .demo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 360 / 320;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    color: #2a2a2a;
+  }
+
+  .canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 360px;
+    height: 320px;
+    transform-origin: 0 0;
+    background: #fafafa;
+    transition: opacity 0.6s ease;
+  }
+
+  .canvas.fade {
+    opacity: 0;
+  }
+
+  .ic,
+  .tile,
+  .check,
+  .updown {
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+
+  .ic :global(svg) {
+    width: 17px;
+    height: 17px;
+    color: #4b4b4b;
+  }
+
+  .list {
+    margin: 0;
+    padding: 14px 16px 0;
+    list-style: none;
+  }
+
+  .list li {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 40px;
+    padding-left: 12px;
+    font-size: 15px;
+  }
+
+  .list .label {
+    height: 34px;
+    padding: 8px 0 0 4px;
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    color: #8a8a8a;
+  }
+
+  /* The switcher at the bottom of the sidebar */
+  .switcher {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 46px;
+    padding: 0 14px;
+    border: 1px solid #e6e6e6;
+    border-radius: 13px;
+    background: #fafafa;
+    font-size: 15px;
+    transition:
+      background 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.15s ease;
+  }
+
+  .switcher b {
+    font-weight: 400;
+  }
+
+  .switcher.hover {
+    background: #f1f1f1;
+  }
+
+  .switcher.flash {
+    border-color: #8fd0f5;
+    background: #eef8ff;
+  }
+
+  .updown {
+    margin-left: auto;
+  }
+
+  .updown :global(svg) {
+    width: 16px;
+    height: 16px;
+    color: #6a6a6a;
+  }
+
+  .pressed {
+    transform: scale(0.97);
+  }
+
+  /* Version menu, opens upward from the switcher */
+  .menu {
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: 72px;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 14px 10px 10px;
+    border: 1px solid #ececec;
+    border-radius: 14px;
+    background: #fbfbfb;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+    transform-origin: 50% 100%;
+    transition:
+      opacity 0.25s ease,
+      transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .menu.open {
+    opacity: 1;
+    transform: none;
+  }
+
+  .menu-label {
+    padding: 0 10px 6px;
+    font-weight: 500;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    color: #6a6a6a;
+  }
+
+  .row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 38px;
+    padding: 0 10px;
+    border-radius: 10px;
+    font-size: 15px;
+    color: #555;
+    transition:
+      background 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .row.hover {
+    background: #f0f0f0;
+  }
+
+  .row.on {
+    font-weight: 500;
+    color: #101010;
+  }
+
+  .tile {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: #e2f3fe;
+  }
+
+  .tile :global(svg) {
+    width: 16px;
+    height: 16px;
+    color: #33b8ff;
+  }
+
+  .check {
+    margin-left: auto;
+    opacity: 0;
+    transform: scale(0.6);
+    transition:
+      opacity 0.2s ease,
+      transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1.4);
+  }
+
+  .check :global(svg) {
+    width: 17px;
+    height: 17px;
+    color: #33b8ff;
+  }
+
+  .on .check {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Reduced motion: show the menu open as a still image */
+  @media (prefers-reduced-motion: reduce) {
+    .menu {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

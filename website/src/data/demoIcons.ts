@@ -15,6 +15,9 @@ export const icon = (name: string) => {
     search: '<circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
     panels: '<path d="M3 4h8v16H3zM13 4h8v7h-8zM13 13h8v7h-8z" fill="currentColor"/>',
     book: '<path d="M3 5c3-1 6-1 8.5 1v14C9 18 6 18 3 19zM21 5c-3-1-6-1-8.5 1v14c2.5-2 5.5-2 8.5-1z" fill="currentColor"/>',
+    version: '<path d="M4 3h5v5H4zM4 16h5v5H4zM15 9.5h5v5h-5z" fill="currentColor"/><path d="M6.5 8v8M6.5 12H15" stroke="currentColor" stroke-width="2" fill="none"/>',
+    updown: '<path d="m8 9 4-4 4 4M8 15l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
+    check: '<path d="m5 12.5 4.5 4.5L19 7.5" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>',
     sync: '<path d="M20 12a8 8 0 0 1-14 5.3M4 12A8 8 0 0 1 18 6.7M18 3v4h-4M6 21v-4h4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
   };
   return `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">${p[name]}</svg>`;

@@ -9,6 +9,7 @@ import ArchitectureDiagram from '../components/ArchitectureDiagram.astro';
 import GlowBackdrop from '../components/GlowBackdrop.astro';
 import ProductDemo from '../components/ProductDemo.astro';
 import SqlDemo from '../components/SqlDemo.astro';
+import VersionDemo from '../components/VersionDemo.astro';
 import { BOOK_CALL, GITHUB, LINKEDIN, DOCKER_COMMAND } from '../data/site';
 
 const GET_STARTED = `${GITHUB}#quick-start`;
@@ -159,6 +160,9 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
         <div class="feature-copy">
           <h3>Every FHIR version, one server</h3>
           <p>Work with R4, R4B, R5, and R6 data in the same application.</p>
+        </div>
+        <div class="version-demo hover-lift">
+          <VersionDemo />
         </div>
       </article>
 
@@ -519,6 +523,20 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     border-right: 0;
     border-radius: 14px 0 0 0;
     background: #f5f5f5;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+  }
+
+  /* Scripted close-up of the FHIR version switcher */
+  .version-demo {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 36px;
+    width: 400px;
+    margin: 0 auto;
+    overflow: hidden;
+    border: 1px solid #e6e6e6;
+    border-radius: 16px;
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
   }
 
@@ -1132,6 +1150,14 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     .mockup-security {
       left: 28px;
       top: 200px;
+    }
+
+    .version-demo {
+      position: relative;
+      bottom: auto;
+      width: 100%;
+      max-width: 360px;
+      margin-top: 24px;
     }
 
     .fhirpath-diagram {
