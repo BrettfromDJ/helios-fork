@@ -5,6 +5,9 @@
 // ViewDefinition, runs it and scrolls to the results table. All data is fake.
 // Designed on a 1320x720 canvas and scaled to fit its container.
 
+import DemoCursor from './DemoCursor.astro';
+import { icon } from '../data/demoIcons';
+
 const stats = [
   { label: 'RESOURCE TYPES', value: '27', note: 'used for R4' },
   { label: 'STORED RESOURCES', value: '19.0M', note: 'across active tenant' },
@@ -207,27 +210,9 @@ const sideIcons = [
   'sync',
 ];
 
-const icon = (name: string) => {
-  const p: Record<string, string> = {
-    home: '<path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z" fill="currentColor"/>',
-    layers: '<path d="m12 3 9 5-9 5-9-5z" fill="currentColor"/><path d="m3 13 9 5 9-5" stroke="currentColor" stroke-width="2" fill="none"/>',
-    stack: '<path d="m12 4 8 4-8 4-8-4z" fill="currentColor"/><path d="m4 12 8 4 8-4M4 16l8 4 8-4" stroke="currentColor" stroke-width="1.8" fill="none"/>',
-    download: '<path d="M12 3v11m0 0-4-4m4 4 4-4M4 20h16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
-    upload: '<path d="M8 16 18 6m0 0h-7m7 0v7M4 20h16" stroke="currentColor" stroke-width="2.2" fill="none" stroke-linecap="round"/>',
-    grid: '<path d="M3 4h8v7H3zM13 4h8v7h-8zM3 13h8v7H3zM13 13h8v7h-8z" fill="currentColor"/>',
-    code: '<path d="m8 7-5 5 5 5M16 7l5 5-5 5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
-    building: '<path d="M5 3h14v18H5z" fill="currentColor"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2" stroke="#fafafa" stroke-width="1.6"/>',
-    shield: '<path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z" fill="currentColor"/>',
-    search: '<circle cx="11" cy="11" r="6.5" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>',
-    panels: '<path d="M3 4h8v16H3zM13 4h8v7h-8zM13 13h8v7h-8z" fill="currentColor"/>',
-    book: '<path d="M3 5c3-1 6-1 8.5 1v14C9 18 6 18 3 19zM21 5c-3-1-6-1-8.5 1v14c2.5-2 5.5-2 8.5-1z" fill="currentColor"/>',
-    sync: '<path d="M20 12a8 8 0 0 1-14 5.3M4 12A8 8 0 0 1 18 6.7M18 3v4h-4M6 21v-4h4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>',
-  };
-  return `<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">${p[name]}</svg>`;
-};
 ---
 
-<div class="demo" data-demo>
+<div class="demo" data-demo="console">
   <div class="canvas" aria-hidden="true">
     <!-- Sidebar -->
     <aside class="side">
@@ -515,107 +500,30 @@ const icon = (name: string) => {
       </div>
     </div>
 
-    <!-- Cursor -->
-    <div class="cursor" data-cursor>
-      <svg viewBox="0 0 24 24" width="26" height="26">
-        <path d="M5 3l14 8-6.5 1.5L9.5 19z" fill="#0b0b0b" stroke="#fff" stroke-width="1.5" stroke-linejoin="round" />
-      </svg>
-      <span class="ripple" data-ripple></span>
-    </div>
+    <DemoCursor />
   </div>
 </div>
 
 <script>
-  // Drives the walkthrough. Everything is positioned on the 1320x720 canvas,
-  // then the canvas is scaled to the container's width.
-  type Pt = { x: number; y: number };
+  // Drives the walkthrough on the 1320x720 canvas (see scripts/demo.ts).
+  import { setupDemo, type DemoKit } from '../scripts/demo';
 
-  const W = 1320;
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  for (const demo of document.querySelectorAll<HTMLElement>('[data-demo]')) {
-    const canvas = demo.querySelector<HTMLElement>('.canvas')!;
-    const cursor = demo.querySelector<HTMLElement>('[data-cursor]')!;
-    const ripple = demo.querySelector<HTMLElement>('[data-ripple]')!;
+  for (const demo of document.querySelectorAll<HTMLElement>('[data-demo="console"]')) {
     const chart = demo.querySelector<HTMLElement>('[data-chart]')!;
     const guide = demo.querySelector<HTMLElement>('[data-guide]')!;
     const tooltip = demo.querySelector<HTMLElement>('[data-tooltip]')!;
     const tipDate = demo.querySelector<HTMLElement>('[data-tip-date]')!;
     const tipValues = [...demo.querySelectorAll<HTMLElement>('[data-tip-value]')];
-    const $ = (sel: string) => demo.querySelector<HTMLElement>(sel)!;
-
-    // ---- scale to fit ----
-    let scale = 1;
-    const fit = () => {
-      scale = demo.clientWidth / W;
-      canvas.style.transform = `scale(${scale})`;
-    };
-    new ResizeObserver(fit).observe(demo);
-    fit();
-
-    if (reduce) continue; // static Home screen, no cursor
-
-    // ---- helpers ----
-    let running = false;
-    let generation = 0;
-    const pos: Pt = { x: 980, y: 640 };
-    const place = () => {
-      cursor.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
-      onCursorMove();
-    };
-
-    // Point at the center (or an offset) of an element, in canvas units
-    const at = (el: Element, fx = 0.5, fy = 0.5): Pt => {
-      const r = el.getBoundingClientRect();
-      const c = canvas.getBoundingClientRect();
-      return { x: (r.left - c.left + r.width * fx) / scale, y: (r.top - c.top + r.height * fy) / scale };
-    };
-
-    const sleep = (ms: number, gen: number) =>
-      new Promise<void>((res, rej) => setTimeout(() => (gen === generation ? res() : rej('stop')), ms));
-
-    const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
-
-    const moveTo = (to: Pt, ms: number, gen: number, easing = ease) =>
-      new Promise<void>((res, rej) => {
-        const from = { ...pos };
-        const start = performance.now();
-        const step = (now: number) => {
-          if (gen !== generation) return rej('stop');
-          const t = Math.min(1, (now - start) / ms);
-          const e = easing(t);
-          pos.x = from.x + (to.x - from.x) * e;
-          pos.y = from.y + (to.y - from.y) * e;
-          place();
-          t < 1 ? requestAnimationFrame(step) : res();
-        };
-        requestAnimationFrame(step);
-      });
-
-    const click = async (el: HTMLElement | null, gen: number) => {
-      cursor.classList.add('down');
-      ripple.classList.remove('go');
-      void ripple.offsetWidth;
-      ripple.classList.add('go');
-      el?.classList.add('pressed');
-      await sleep(160, gen);
-      cursor.classList.remove('down');
-      el?.classList.remove('pressed');
-    };
 
     const show = (screen: string) => {
       demo.querySelectorAll('[data-screen]').forEach((s) => s.classList.toggle('active', (s as HTMLElement).dataset.screen === screen));
       demo.querySelectorAll('[data-nav]').forEach((n) => n.classList.toggle('active', (n as HTMLElement).dataset.nav === screen));
     };
 
-    const scrollTo = (sel: string, px: number) => {
-      $(sel).style.transform = `translateY(${-px}px)`;
-    };
-
-    // ---- chart hover: guide + tooltip follow the cursor over the chart ----
+    // Chart hover: guide + tooltip follow the cursor over the chart
     const DAY0 = new Date(Date.UTC(2026, 8, 16));
     const fmt = (d: Date) => d.toLocaleString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' }).toUpperCase();
-    function onCursorMove() {
+    const onMove = ({ $, at, pos }: DemoKit) => {
       if (!$('[data-screen="home"]').classList.contains('active')) return;
       const c = at(chart, 0, 0);
       const x = pos.x - c.x;
@@ -631,10 +539,13 @@ const icon = (name: string) => {
       tipValues.forEach((el) => {
         el.textContent = Math.round(Number(el.dataset.tipValue) * k).toLocaleString('en-US');
       });
-    }
+    };
 
-    // ---- reset to the start state ----
-    const reset = () => {
+    const scrollTo = (sel: string, px: number) => {
+      demo.querySelector<HTMLElement>(sel)!.style.transform = `translateY(${-px}px)`;
+    };
+
+    const reset = ({ $, pos }: DemoKit) => {
       show('home');
       chart.classList.remove('hovering');
       demo.querySelectorAll('[data-modal]').forEach((m) => m.classList.remove('open'));
@@ -646,15 +557,11 @@ const icon = (name: string) => {
       $('[data-view-results]').classList.remove('loaded', 'loading');
       $('[data-rows-note]').textContent = 'Run the view to see rows';
       ['[data-scroll="json"]', '[data-scroll="form"]', '[data-scroll="view"]'].forEach((s) => scrollTo(s, 0));
-      canvas.classList.remove('fade');
       pos.x = 980;
       pos.y = 640;
-      place();
     };
 
-    // ---- the walkthrough ----
-    const run = async (gen: number) => {
-      reset();
+    const run = async ({ $, at, sleep, moveTo, click }: DemoKit, gen: number) => {
       await sleep(700, gen);
 
       // 1. Hover across the chart
@@ -722,39 +629,9 @@ const icon = (name: string) => {
       await moveTo(at($('[data-view-body]'), 0.55, 0.6), 700, gen);
       scrollTo('[data-scroll="view"]', 330);
       await sleep(3600, gen);
-
-      // Fade and start over
-      canvas.classList.add('fade');
-      await sleep(700, gen);
     };
 
-    const loop = async () => {
-      while (running) {
-        const gen = generation;
-        try {
-          await run(gen);
-        } catch {
-          return; // stopped or restarted
-        }
-      }
-    };
-
-    // Only play while on screen
-    new IntersectionObserver(
-      (entries) => {
-        const visible = entries.some((e) => e.isIntersecting);
-        if (visible && !running) {
-          running = true;
-          generation++;
-          loop();
-        } else if (!visible && running) {
-          running = false;
-          generation++;
-          reset();
-        }
-      },
-      { threshold: 0.3 },
-    ).observe(demo);
+    setupDemo(demo, { width: 1320, reset, run, onMove });
   }
 </script>
 
@@ -1748,59 +1625,4 @@ const icon = (name: string) => {
   }
 
   /* ---------- Cursor ---------- */
-  .cursor {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 26px;
-    height: 26px;
-    margin: -4px 0 0 -5px;
-    pointer-events: none;
-    z-index: 10;
-    will-change: transform;
-  }
-
-  .cursor svg {
-    position: relative;
-    z-index: 1;
-    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.25));
-    transition: transform 0.12s ease;
-  }
-
-  .cursor.down svg {
-    transform: scale(0.85);
-  }
-
-  .ripple {
-    position: absolute;
-    left: -11px;
-    top: -10px;
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: rgba(51, 184, 255, 0.35);
-    opacity: 0;
-    transform: scale(0.3);
-  }
-
-  .ripple.go {
-    animation: ripple 0.55s ease-out;
-  }
-
-  @keyframes ripple {
-    0% {
-      opacity: 0.9;
-      transform: scale(0.3);
-    }
-    100% {
-      opacity: 0;
-      transform: scale(1.6);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .cursor {
-      display: none;
-    }
-  }
 </style>

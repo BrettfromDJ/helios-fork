@@ -8,6 +8,7 @@ import CodeBox from '../components/CodeBox.astro';
 import ArchitectureDiagram from '../components/ArchitectureDiagram.astro';
 import GlowBackdrop from '../components/GlowBackdrop.astro';
 import ProductDemo from '../components/ProductDemo.astro';
+import SqlDemo from '../components/SqlDemo.astro';
 import { BOOK_CALL, GITHUB, LINKEDIN, DOCKER_COMMAND } from '../data/site';
 
 const GET_STARTED = `${GITHUB}#quick-start`;
@@ -88,13 +89,15 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
   <section class="container features">
     <article class="card feature feature-wide feature-tall lift-on-hover" data-reveal>
       <Orb class="feature-glow glow-sql" />
-      <img class="feature-mockup mockup-sql hover-lift" src="/figma/sql-on-fhir.png" alt="" loading="lazy" />
       <div class="feature-copy">
         <h3>SQL-on-FHIR, built in.</h3>
         <p class="w-333">
           Run ViewDefinitions against live data and export to CSV, JSON, NDJSON, or Parquet. Python
           bindings included.
         </p>
+      </div>
+      <div class="sql-demo hover-lift">
+        <SqlDemo />
       </div>
     </article>
 
@@ -504,10 +507,19 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     max-width: none;
   }
 
-  .mockup-sql {
+  /* Scripted SQL-on-FHIR walkthrough: flush to the card's right edge and
+     running off the bottom, like a window peeking into the card */
+  .sql-demo {
+    position: absolute;
     left: 521px;
     top: 37px;
-    width: 842px;
+    right: 0;
+    overflow: hidden;
+    border: 1px solid #e3e3e3;
+    border-right: 0;
+    border-radius: 14px 0 0 0;
+    background: #f5f5f5;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
   }
 
   .mockup-security {
@@ -1085,9 +1097,17 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       grid-template-columns: 1fr;
     }
 
-    .feature-wide .feature-mockup {
-      left: 40%;
-      top: 180px;
+    .feature-wide {
+      min-height: 0;
+    }
+
+    .sql-demo {
+      position: relative;
+      left: auto;
+      top: auto;
+      margin-top: 28px;
+      border-right: 1px solid #e3e3e3;
+      border-radius: 12px;
     }
   }
 
@@ -1109,7 +1129,6 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       min-height: 0;
     }
 
-    .feature-wide .feature-mockup,
     .mockup-security {
       left: 28px;
       top: 200px;

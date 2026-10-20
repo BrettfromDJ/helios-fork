@@ -1,0 +1,1306 @@
+---
+// Scripted walkthrough of SQL-on-FHIR in the Helios console, built from real
+// elements (no video). A fake cursor scrolls the patient_addresses
+// ViewDefinition to its results, opens SQL Export from the sidebar, starts a
+// new export of patient_addresses and watches the job run. All data is fake.
+// Designed on a 1120x760 canvas and scaled to fit its container.
+import DemoCursor from './DemoCursor.astro';
+import { icon } from '../data/demoIcons';
+
+const nav = [
+  { group: 'WORK', items: [['home', 'Home'], ['layers', 'Resources']] },
+  { group: 'BATCH & DATA', items: [['stack', 'Batch / Transaction'], ['download', 'Import'], ['upload', 'Export']] },
+  {
+    group: 'SQL ON FHIR',
+    items: [['grid', 'View Definitions', 'views'], ['code', 'SQL Queries'], ['stack', 'SQL Views'], ['upload', 'SQL Export', 'exports']],
+  },
+  {
+    group: 'SERVER',
+    items: [['building', 'Tenants'], ['shield', 'Capability & Conformance'], ['search', 'Search Parameters'], ['panels', 'Compartments']],
+  },
+  { group: 'TOOLS', items: [['book', 'Terminology'], ['sync', 'Subscriptions']] },
+];
+
+const recent = [
+  ['patient_addresses', 'Patient'],
+  ['us_core_blood_pressures', 'Observation'],
+  ['shareable_patient_demographics', 'Patient'],
+  ['questionnaire_response_items', 'QuestionnaireResponse'],
+  ['patient_names_with_index', 'Patient'],
+];
+
+const views = [
+  ['code_system_hierarchy', 'CodeSystem'],
+  ['condition_flat', 'Condition'],
+  ['encounter_flat', 'Encounter'],
+  ['patient_addresses', 'Patient'],
+  ['patient_and_contact_addresses', 'Patient'],
+  ['patient_demographics', 'Patient'],
+  ['patient_names_with_index', 'Patient'],
+  ['questionnaire_response_items', 'QuestionnaireResponse'],
+  ['shareable_patient_demographics', 'Patient'],
+  ['us_core_blood_pressures', 'Observation'],
+];
+
+// ViewDefinition JSON, one entry per line: [indent, html]
+const k = (s: string) => `<span class="jk">"${s}"</span>`;
+const v = (s: string) => `<span class="js">"${s}"</span>`;
+const viewJson: [number, string][] = [
+  [0, '{'],
+  [1, `${k('resourceType')}: ${v('ViewDefinition')},`],
+  [1, `${k('resourceDefinition')}:`],
+  [2, `${v('http://hl7.org/fhir/uv/sql-on-fhir/StructureDefinition/ViewDefinition')},`],
+  [1, `${k('select')}: [`],
+  [2, '{'],
+  [3, `${k('column')}: [`],
+  [4, `{ ${k('path')}: ${v('getResourceKey()')}, ${k('name')}: ${v('patient_id')} }`],
+  [3, ']'],
+  [2, '},'],
+  [2, '{'],
+  [3, `${k('forEach')}: ${v('address')},`],
+  [3, `${k('column')}: [`],
+  [4, '{'],
+  [5, `${k('path')}: ${v("line.join('\\n')")},`],
+  [5, `${k('name')}: ${v('street')},`],
+  [5, `${k('description')}: ${v('The full street address.')}`],
+  [4, '},'],
+  [4, `{ ${k('path')}: ${v('use')}, ${k('name')}: ${v('use')} },`],
+  [4, `{ ${k('path')}: ${v('city')}, ${k('name')}: ${v('city')} },`],
+  [4, `{ ${k('path')}: ${v('postalCode')}, ${k('name')}: ${v('zip')} }`],
+  [3, ']'],
+  [2, '}'],
+  [1, ']'],
+  [0, '}'],
+];
+
+const guidedFields = [
+  { name: 'id', type: 'id', value: '01a15a1e-93ad-7b13-8ada-a353a1b21574', note: 'Logical id of this artifact' },
+  { name: 'versionId', type: 'id', value: '1', note: 'Version specific identifier', nested: true },
+  { name: 'lastUpdated', type: 'instant', value: '2026-10-20T16:21:55.758Z', note: 'When the resource version last changed', nested: true },
+  { name: 'language', type: 'code', value: 'en', note: 'Language of the resource content' },
+  { name: 'status', type: 'code', value: 'generated', note: 'generated | extensions | additional | empty', nested: true },
+  { name: 'name', type: 'string', value: 'patient_addresses', note: 'Name for this view definition (computer friendly)' },
+  { name: 'status', type: 'code', value: 'draft', note: 'draft | active | retired | unknown' },
+  { name: 'resource', type: 'code', value: 'Patient', note: 'FHIR resource for the ViewDefinition' },
+];
+
+const rows = [
+  ['7d24f7a0-6f2e-ce3b-5568-db7b14695583', '492 Conn Club', 'home', 'Everett', '02149'],
+  ['44219cdc-80b3-18be-fd67-fbb019971384', '194 Willms Mews', 'home', 'Arlington', '02476'],
+  ['44a2f44f-1f46-43ee-8c1f-fd86d4081520', '386 Watsica Loaf Unit 10', 'home', 'Westwood', '02090'],
+  ['06c5e8e3-0e46-d195-bf30-7a5396894b57', '895 Mosciski Camp', 'home', 'Tyngsboro', '01879'],
+  ['24531131-f9df-5f7f-7e6f-5630151caeed', '290 Leffler Fork', 'home', 'Waltham', '02472'],
+  ['627deb5a-b17b-5c08-3bae-bf384381adac', '107 Mueller Crossroad', 'home', 'Boston', '02210'],
+  ['8a18f5ac-c2e7-6318-a76c-d5ae4f54c13b', '206 Dare Trailer Unit 8', 'home', 'Canton', '02021'],
+  ['73980a37-c279-25bc-7506-fc58b97984fe', '164 Monahan Vale', 'home', 'Methuen', '01841'],
+  ['65c3af91-faec-8df4-7b6d-29f9b6cf3d1e', '1067 Kiehn Port Suite 12', 'home', 'Canton', '02021'],
+  ['c0832d57-9cc4-7178-d8d8-7437f1c312f0', '1032 McKenzie Trafficway', 'home', 'Needham', '02494'],
+  ['3b9eadad-d44c-568c-88b4-89cd73a6a33f', '236 Block Club Unit 44', 'home', 'Taunton', '02718'],
+  ['fcc6a489-3d58-c9cc-cc1e-512ef74f5911', '767 Toy Crossroad', 'work', 'Hull', '02045'],
+  ['4a76fd03-96e7-9482-4167-be6006ea79b5', '535 Rippin Underpass Unit 36', 'home', 'Natick', '01760'],
+  ['3a04a0d9-a4df-a097-205b-f59044ec1844', '261 Sauer Crossing', 'home', 'Everett', '02149'],
+  ['f49dd24f-6e78-eb3b-eb47-cd5955babb2d', '223 Moen Wynd Apt 1', 'home', 'Worcester', '01602'],
+  ['aaea74e0-f712-9256-0c69-1618624ef029', '834 Littel Junction', 'home', 'Fall River', '02721'],
+];
+---
+
+<div class="demo" data-demo="sql">
+  <div class="canvas" aria-hidden="true">
+    <!-- Sidebar: icons only, expands with labels on hover -->
+    <aside class="side" data-side>
+      <div class="side-brand">
+        <span class="side-logo"></span>
+        <span class="side-name"><b>Helios FHIR Server</b><small>hfs v0.2.5</small></span>
+      </div>
+      {
+        nav.map(({ group, items }) => (
+          <div class="side-group">
+            <span class="side-label">{group}</span>
+            {items.map(([ic, label, key]) => (
+              <span class:list={['side-item', { active: key === 'views' }]} data-nav={key}>
+                <span class="side-icon" set:html={icon(ic)} />
+                <span class="side-text">{label}</span>
+              </span>
+            ))}
+          </div>
+        ))
+      }
+    </aside>
+
+    <header class="topbar">
+      <span class="theme-toggle"><span>☀</span><span>☾</span></span>
+      <span class="user"></span>
+    </header>
+
+    <!-- View Definitions -->
+    <section class="screen active" data-screen="views">
+      <h2 class="page-title">View Definitions</h2>
+      <p class="sub">Author and manage the ViewDefinitions that SQL on FHIR runs flatten resources with.</p>
+      <div class="vd-body">
+        <div class="vd-list">
+          <span class="mini-label">VIEW DEFINITIONS</span>
+          <span class="filter">⌕ &nbsp;Filter views</span>
+          <span class="mini-label">RECENTLY USED</span>
+          <ul class="name-list">
+            {
+              recent.map(([n, r], i) => (
+                <li class:list={{ on: i === 0 }}>
+                  <span>{n}</span>
+                  <small>{r}</small>
+                </li>
+              ))
+            }
+          </ul>
+          <span class="mini-label">ALL VIEW DEFINITIONS</span>
+          <ul class="name-list">
+            {
+              views.map(([n, r]) => (
+                <li class:list={{ on: n === 'patient_addresses' }}>
+                  <span>{n}</span>
+                  <small>{r}</small>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+
+        <div class="vd-main" data-vd-main>
+          <div class="vd-scroll" data-scroll="views">
+            <div class="vd-head">
+              <strong>▦ patient_addresses</strong>
+              <span class="spacer"></span>
+              <span class="btn-ghost">⧉ Duplicate</span>
+              <span class="btn-ghost danger">🗑 Delete</span>
+              <span class="btn-primary">+ Create New</span>
+            </div>
+            <div class="editor-row">
+              <div class="pane">
+                <div class="pane-head">
+                  <b>Definition (JSON)</b>
+                  <span class="hint">● Runs as you type — results follow the current definition</span>
+                  <span class="spacer"></span>
+                  <span class="pill">Format</span>
+                </div>
+                <div class="code">
+                  {
+                    viewJson.map(([ind, html], i) => (
+                      <div class="ln">
+                        <span class="no">{i + 1}</span>
+                        <span class="src" style={`padding-left:${ind * 14}px`} set:html={html} />
+                      </div>
+                    ))
+                  }
+                </div>
+                <div class="pane-foot"><span class="btn-ghost">Cancel</span><span class="btn-primary small">Save</span></div>
+              </div>
+              <div class="pane">
+                <div class="pane-head"><b>⚙ Guided form</b><span class="spacer"></span><span class="ok">No issues.</span></div>
+                <div class="form">
+                  <p class="check">● Checked as you type: structure, cardinality, required bindings and FHIRPath syntax</p>
+                  <p class="form-title">ViewDefinition <code>ViewDefinition</code></p>
+                  {
+                    guidedFields.map((f) => (
+                      <div class:list={['field', { nested: f.nested }]}>
+                        <span class="fname">
+                          {f.name} <code>{f.type}</code>
+                        </span>
+                        <span class="fvalue">{f.value}</span>
+                        <span class="fnote">{f.note}</span>
+                      </div>
+                    ))
+                  }
+                </div>
+              </div>
+            </div>
+            <div class="pane results">
+              <div class="pane-head"><b>Results</b><span class="spacer"></span><span class="rows">50 rows · 11 ms</span></div>
+              <div class="table addr">
+                <div class="tr th"><span>PATIENT_ID</span><span>STREET</span><span>USE</span><span>CITY</span><span>ZIP</span></div>
+                {
+                  rows.map((r) => (
+                    <div class="tr">
+                      {r.map((c) => (
+                        <span>{c}</span>
+                      ))}
+                    </div>
+                  ))
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SQL Exports list -->
+    <section class="screen" data-screen="exports">
+      <div class="head-row">
+        <div>
+          <h2 class="page-title">SQL Exports</h2>
+          <p class="sub" data-export-count>0 exports · 0 running</p>
+        </div>
+        <span class="btn-primary" data-new-export>+ New SQL Export</span>
+      </div>
+      <div class="empty" data-empty>No SQL exports yet. Use New SQL Export to start one.</div>
+      <div class="job" data-job>
+        <div class="job-head">
+          <strong>patient_addresses</strong>
+          <span class="spacer"></span>
+          <span class="badge" data-job-badge>In progress</span>
+          <span class="btn-ghost" data-job-action>Cancel</span>
+          <span class="btn-ghost dots">⋮</span>
+        </div>
+        <div class="bar"><span data-job-bar></span></div>
+        <p class="job-note" data-job-note>Writing patient_addresses · 0 of 1 subject (1 ViewDefinition) · NDJSON · started 20:37 UTC</p>
+      </div>
+    </section>
+
+    <!-- New SQL Export -->
+    <section class="screen" data-screen="new">
+      <div class="new-scroll" data-scroll="new">
+        <span class="back">‹ SQL Exports</span>
+        <h2 class="page-title">New SQL Export</h2>
+        <p class="sub">Run stored view definitions, SQL queries and SQL views as a long-running $sql-export job and download the output files.</p>
+
+        <span class="field-label">Name</span>
+        <span class="input name">Monthly patient flat files</span>
+
+        <h3 class="section-title">What are you exporting?</h3>
+        <div class="pane subjects">
+          <div class="pane-head">
+            <b>⛁ Subjects</b><span class="count">10</span>
+            <span class="spacer"></span>
+            <span class="seg"><span class="on">All</span><span>▦ View Definitions</span><span>&lt;&gt; Queries</span><span>⛁ Views</span></span>
+            <span class="input small">Filter subjects</span>
+          </div>
+          <div class="table subj">
+            <div class="tr th">
+              <span><i class="box" data-check-all></i></span><span>SUBJECT</span><span>KIND</span><span>STATUS</span>
+            </div>
+            {
+              views.map(([n]) => (
+                <div class="tr" data-subject={n}>
+                  <span>
+                    <i class="box" />
+                  </span>
+                  <span>{n}</span>
+                  <span>
+                    <em class="kind">ViewDefinition</em>
+                  </span>
+                  <span>draft</span>
+                </div>
+              ))
+            }
+          </div>
+          <p class="selected" data-selected>0 of 10 selected</p>
+        </div>
+
+        <div class="pane narrow">
+          <div class="pane-head"><b>⇋ Narrow it down</b><span class="spacer"></span><span class="hint">optional — leave empty to export everything</span></div>
+          <div class="narrow-grid">
+            <div><span class="field-label">PATIENTS</span><span class="input">⌕ &nbsp;Search patients</span></div>
+            <div><span class="field-label">GROUPS</span><span class="input">⌕ &nbsp;Search groups</span></div>
+            <div><span class="field-label">SINCE</span><span class="input">All time <i>⌄</i></span></div>
+            <div><span class="field-label">CUSTOM INSTANT</span><span class="input">2026-08-01T00:00:00Z</span></div>
+          </div>
+        </div>
+
+        <h3 class="section-title">Output format</h3>
+        <div class="formats">
+          <div class="format on"><b><i class="radio"></i>NDJSON</b><span>One JSON object per row. Streams well into pipelines.</span></div>
+          <div class="format"><b><i class="radio"></i>CSV</b><span>Header row plus one line per row. Opens in any spreadsheet.</span></div>
+          <div class="format"><b><i class="radio"></i>JSON</b><span>A single JSON array per output. Easiest to inspect by hand.</span></div>
+          <div class="format"><b><i class="radio"></i>Parquet</b><span>Columnar and typed. Best for analytics engines.</span></div>
+        </div>
+        <div class="advanced">› Advanced</div>
+        <div class="start-row"><span class="btn-primary" data-start>⇪ Start Export <i class="spinner"></i></span></div>
+      </div>
+    </section>
+
+    <DemoCursor />
+  </div>
+</div>
+
+<script>
+  // Drives the walkthrough on the 1120x760 canvas (see scripts/demo.ts).
+  import { setupDemo, type DemoKit } from '../scripts/demo';
+
+  for (const demo of document.querySelectorAll<HTMLElement>('[data-demo="sql"]')) {
+    const side = demo.querySelector<HTMLElement>('[data-side]')!;
+
+    const show = (screen: string) => {
+      demo.querySelectorAll('[data-screen]').forEach((s) => s.classList.toggle('active', (s as HTMLElement).dataset.screen === screen));
+    };
+    const setNav = (key: string) => {
+      demo.querySelectorAll('[data-nav]').forEach((n) => n.classList.toggle('active', (n as HTMLElement).dataset.nav === key));
+    };
+    const scrollTo = (sel: string, px: number) => {
+      demo.querySelector<HTMLElement>(sel)!.style.transform = `translateY(${-px}px)`;
+    };
+
+    // The sidebar opens while the cursor is over it
+    const onMove = ({ pos }: DemoKit) => side.classList.toggle('expanded', pos.x < 56);
+
+    const reset = ({ $, pos }: DemoKit) => {
+      show('views');
+      setNav('views');
+      side.classList.remove('expanded');
+      scrollTo('[data-scroll="views"]', 0);
+      scrollTo('[data-scroll="new"]', 0);
+      demo.querySelectorAll('[data-subject]').forEach((r) => r.classList.remove('checked', 'hover'));
+      $('[data-check-all]').classList.remove('some');
+      $('[data-selected]').textContent = '0 of 10 selected';
+      $('[data-start]').classList.remove('busy');
+      $('[data-empty]').hidden = false;
+      const job = $('[data-job]');
+      job.classList.remove('shown', 'done');
+      $('[data-job-bar]').style.width = '0%';
+      $('[data-export-count]').textContent = '0 exports · 0 running';
+      $('[data-job-badge]').textContent = 'In progress';
+      $('[data-job-action]').textContent = 'Cancel';
+      $('[data-job-note]').textContent = 'Writing patient_addresses · 0 of 1 subject (1 ViewDefinition) · NDJSON · started 20:37 UTC';
+      pos.x = 620;
+      pos.y = 330;
+    };
+
+    const run = async ({ $, at, sleep, moveTo, click }: DemoKit, gen: number) => {
+      await sleep(900, gen);
+
+      // 1. Scroll the ViewDefinition down to its results
+      await moveTo(at($('[data-vd-main]'), 0.45, 0.45), 700, gen);
+      scrollTo('[data-scroll="views"]', 452);
+      await sleep(2600, gen);
+
+      // 2. Open the sidebar and pick SQL Export
+      await moveTo({ x: 26, y: 300 }, 1000, gen);
+      await sleep(500, gen);
+      const navExport = $('[data-nav="exports"]');
+      await moveTo(at(navExport, 0.3), 700, gen);
+      await sleep(250, gen);
+      await click(navExport, gen);
+      setNav('exports');
+      show('exports');
+      await moveTo({ x: 520, y: 260 }, 700, gen);
+      await sleep(500, gen);
+
+      // 3. Start a new export
+      const newBtn = $('[data-new-export]');
+      await moveTo(at(newBtn), 900, gen);
+      await click(newBtn, gen);
+      show('new');
+      await sleep(900, gen);
+
+      // 4. Scroll to the subjects and tick patient_addresses
+      await moveTo({ x: 600, y: 420 }, 700, gen);
+      scrollTo('[data-scroll="new"]', 300);
+      await sleep(1100, gen);
+      const row = $('[data-subject="patient_addresses"]');
+      const box = row.querySelector<HTMLElement>('.box')!;
+      await moveTo(at(box), 900, gen);
+      row.classList.add('hover');
+      await sleep(200, gen);
+      await click(box, gen);
+      row.classList.add('checked');
+      $('[data-check-all]').classList.add('some');
+      $('[data-selected]').textContent = '1 of 10 selected';
+      await sleep(700, gen);
+      row.classList.remove('hover');
+
+      // 5. Scroll down to the button and start the export
+      scrollTo('[data-scroll="new"]', 470);
+      await sleep(1300, gen);
+      const start = $('[data-start]');
+      await moveTo(at(start, 0.45), 1100, gen);
+      await click(start, gen);
+      start.classList.add('busy');
+      await sleep(1100, gen);
+
+      // 6. Watch the job run
+      $('[data-empty]').hidden = true;
+      $('[data-export-count]').textContent = '1 export · 1 running';
+      $('[data-job]').classList.add('shown');
+      show('exports');
+      await moveTo({ x: 640, y: 330 }, 900, gen);
+      $('[data-job-bar]').style.width = '100%';
+      await sleep(3200, gen);
+      $('[data-job]').classList.add('done');
+      $('[data-export-count]').textContent = '1 export · 0 running';
+      $('[data-job-badge]').textContent = 'Complete';
+      $('[data-job-action]').textContent = '↓ Download';
+      $('[data-job-note]').textContent = 'patient_addresses.ndjson · 1 of 1 subject (1 ViewDefinition) · 14,212 rows · 3.1 MB';
+      await sleep(3000, gen);
+    };
+
+    setupDemo(demo, { width: 1120, reset, run, onMove });
+  }
+</script>
+
+<style>
+  .demo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1120 / 760;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    color: #101010;
+  }
+
+  .canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1120px;
+    height: 760px;
+    transform-origin: 0 0;
+    background: #f5f5f5;
+    transition: opacity 0.6s ease;
+  }
+
+  .canvas.fade {
+    opacity: 0;
+  }
+
+  code {
+    font-family: var(--font-mono);
+  }
+
+  .spacer {
+    flex: 1;
+  }
+
+  .mini-label,
+  .field-label {
+    font-weight: 500;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: #8a8a8a;
+  }
+
+  .btn-primary,
+  .btn-ghost,
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    transition:
+      transform 0.15s ease,
+      filter 0.15s ease;
+  }
+
+  .btn-primary {
+    padding: 8px 14px;
+    border-radius: 9px;
+    background: #1b7fd6;
+    color: #fff;
+    font-weight: 500;
+    font-size: 12.5px;
+  }
+
+  .btn-primary.small {
+    padding: 6px 14px;
+  }
+
+  .btn-ghost {
+    padding: 6px 11px;
+    border: 1px solid #e4e4e4;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 12px;
+  }
+
+  .btn-ghost.danger {
+    border-color: #f3c4c4;
+    color: #d14343;
+  }
+
+  .pill {
+    padding: 3px 8px;
+    border: 1px solid #e4e4e4;
+    border-radius: 7px;
+    background: #fff;
+    font-size: 10.5px;
+    color: #555;
+  }
+
+  .pressed {
+    transform: scale(0.94);
+    filter: brightness(0.95);
+  }
+
+  /* ---------- Sidebar ---------- */
+  .side {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 5;
+    width: 56px;
+    overflow: hidden;
+    padding: 12px 9px;
+    border-right: 1px solid #e8e8e8;
+    background: #fafafa;
+    transition:
+      width 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+      box-shadow 0.3s ease;
+  }
+
+  .side.expanded {
+    width: 238px;
+    box-shadow: 8px 0 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .side-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 36px;
+    margin-bottom: 8px;
+  }
+
+  .side-logo {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    margin-left: 2px;
+    border-radius: 50%;
+    background: url('/figma/orb.png') center / cover;
+  }
+
+  .side-name,
+  .side-label,
+  .side-text {
+    white-space: nowrap;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .expanded .side-name,
+  .expanded .side-label,
+  .expanded .side-text {
+    opacity: 1;
+    transition-delay: 0.08s;
+  }
+
+  .side-name {
+    display: flex;
+    flex-direction: column;
+    font-size: 12.5px;
+  }
+
+  .side-name small {
+    font-size: 10px;
+    color: #9a9a9a;
+  }
+
+  .side-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .side-label {
+    height: 18px;
+    padding: 6px 0 0 6px;
+    font-weight: 500;
+    font-size: 9px;
+    letter-spacing: 0.06em;
+    color: #9a9a9a;
+  }
+
+  .side-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 29px;
+    padding-left: 10px;
+    border-radius: 9px;
+    color: #4b4b4b;
+    font-size: 12.5px;
+    transition:
+      background 0.2s ease,
+      transform 0.15s ease;
+  }
+
+  .side-icon {
+    display: grid;
+    flex: none;
+  }
+
+  .side-icon :global(svg) {
+    width: 15px;
+    height: 15px;
+  }
+
+  .side-item.active {
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    color: #101010;
+  }
+
+  .topbar {
+    position: absolute;
+    left: 56px;
+    right: 0;
+    top: 0;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-right: 22px;
+    background: #f7f7f7;
+  }
+
+  .theme-toggle {
+    display: flex;
+    gap: 6px;
+    padding: 4px 8px;
+    border: 1px solid #e6e6e6;
+    border-radius: 20px;
+    background: #fff;
+    font-size: 11px;
+  }
+
+  .user {
+    width: 26px;
+    height: 26px;
+    border: 1px solid #e3e3e3;
+    border-radius: 50%;
+    background: #fff;
+  }
+
+  /* ---------- Screens ---------- */
+  .screen {
+    position: absolute;
+    left: 56px;
+    right: 0;
+    top: 48px;
+    bottom: 0;
+    padding: 4px 26px 0;
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(6px);
+    transition:
+      opacity 0.45s ease,
+      transform 0.45s ease;
+  }
+
+  .screen.active {
+    opacity: 1;
+    transform: none;
+  }
+
+  .page-title {
+    font-weight: 600;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+
+  .sub {
+    margin-top: 3px;
+    font-size: 11.5px;
+    color: #707070;
+  }
+
+  .pane,
+  .empty,
+  .job {
+    border: 1px solid #ebebeb;
+    border-radius: 12px;
+    background: linear-gradient(#fdfdfd, #f9f9f9);
+    box-shadow: 0 3px 4px rgba(0, 0, 0, 0.03);
+  }
+
+  .pane-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 38px;
+    padding: 0 14px;
+    border-bottom: 1px solid #efefef;
+    font-size: 12px;
+  }
+
+  .pane-head b {
+    font-weight: 500;
+  }
+
+  .hint {
+    font-size: 10.5px;
+    color: #8a8a8a;
+  }
+
+  .ok {
+    font-size: 11px;
+    color: #1b7fd6;
+  }
+
+  .input {
+    display: flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 11px;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 12px;
+    color: #9a9a9a;
+  }
+
+  .input i {
+    margin-left: auto;
+    font-style: normal;
+  }
+
+  .input.small {
+    width: 150px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  /* Tables */
+  .table {
+    font-size: 11.5px;
+  }
+
+  .tr {
+    display: grid;
+    align-items: center;
+    height: 27px;
+    padding: 0 14px;
+    border-top: 1px solid #efefef;
+    transition: background 0.2s ease;
+  }
+
+  .tr.th {
+    border-top: 0;
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    color: #8a8a8a;
+  }
+
+  .tr span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-right: 12px;
+  }
+
+  /* View Definitions */
+  .vd-body {
+    display: grid;
+    grid-template-columns: 196px 1fr;
+    gap: 18px;
+    margin-top: 16px;
+  }
+
+  .vd-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .filter {
+    padding: 7px 10px;
+    border-radius: 8px;
+    background: #ececec;
+    font-size: 11.5px;
+    color: #9a9a9a;
+  }
+
+  .name-list {
+    margin: 0 0 6px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .name-list li {
+    display: flex;
+    gap: 8px;
+    justify-content: space-between;
+    padding: 5px 8px;
+    border-radius: 7px;
+    font-size: 11.5px;
+  }
+
+  .name-list li span {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .name-list small {
+    flex: none;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 10px;
+    color: #8a8a8a;
+  }
+
+  .name-list li.on {
+    background: #e2f3fe;
+  }
+
+  .vd-main {
+    position: relative;
+    height: 660px;
+    overflow: hidden;
+  }
+
+  .vd-scroll,
+  .new-scroll {
+    transition: transform 1.2s cubic-bezier(0.45, 0, 0.2, 1);
+  }
+
+  .vd-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    font-size: 16px;
+  }
+
+  .vd-head strong {
+    font-weight: 600;
+  }
+
+  .editor-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 10px;
+  }
+
+  .editor-row .pane {
+    display: flex;
+    flex-direction: column;
+    height: 420px;
+    overflow: hidden;
+  }
+
+  .code {
+    flex: 1;
+    padding: 8px 0;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    line-height: 15.5px;
+  }
+
+  .ln {
+    display: flex;
+    white-space: pre;
+  }
+
+  .no {
+    flex: none;
+    width: 30px;
+    padding-right: 10px;
+    text-align: right;
+    color: #b5b5b5;
+  }
+
+  .src :global(.jk) {
+    color: #1b6fc2;
+  }
+
+  .src :global(.js) {
+    color: #2e7d4f;
+  }
+
+  .pane-foot {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 9px 12px;
+    border-top: 1px solid #efefef;
+  }
+
+  .form {
+    padding: 10px 14px;
+    font-size: 11.5px;
+  }
+
+  .check {
+    font-size: 10.5px;
+    color: #6a8a6a;
+  }
+
+  .form-title {
+    margin: 10px 0 6px;
+    font-weight: 500;
+  }
+
+  .form code,
+  .fname code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #efefef;
+    font-size: 9.5px;
+    color: #777;
+  }
+
+  .field {
+    display: grid;
+    grid-template-columns: 112px 1fr;
+    align-items: center;
+    column-gap: 10px;
+    row-gap: 3px;
+    margin-bottom: 9px;
+  }
+
+  .field.nested {
+    padding-left: 14px;
+    grid-template-columns: 98px 1fr;
+  }
+
+  .fname {
+    white-space: nowrap;
+  }
+
+  .fvalue {
+    overflow: hidden;
+    padding: 5px 8px;
+    border: 1px solid #e6e6e6;
+    border-radius: 7px;
+    background: #fff;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 11px;
+  }
+
+  .fnote {
+    grid-column: 1 / -1;
+    font-size: 9.5px;
+    color: #9a9a9a;
+  }
+
+  .results {
+    margin-top: 14px;
+  }
+
+  .rows {
+    font-size: 11px;
+    color: #555;
+  }
+
+  .addr .tr {
+    grid-template-columns: 2.3fr 1.7fr 0.5fr 1fr 0.6fr;
+  }
+
+  .addr .tr:not(.th) span:first-child {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: #555;
+  }
+
+  /* SQL Exports */
+  .head-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .empty {
+    margin-top: 16px;
+    padding: 12px 14px;
+    font-size: 12px;
+    color: #707070;
+  }
+
+  .job {
+    display: none;
+    margin-top: 16px;
+    padding: 12px 14px;
+    animation: rise 0.45s ease both;
+  }
+
+  .job.shown {
+    display: block;
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  .job-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+
+  .job-head strong {
+    font-weight: 500;
+  }
+
+  .badge {
+    padding: 3px 9px;
+    border-radius: 12px;
+    background: #fff4e0;
+    font-size: 10.5px;
+    color: #c07a10;
+    transition:
+      background 0.3s ease,
+      color 0.3s ease;
+  }
+
+  .done .badge {
+    background: #e3f7e9;
+    color: #1f8a46;
+  }
+
+  .dots {
+    padding: 6px 8px;
+  }
+
+  .bar {
+    height: 4px;
+    margin: 11px 0 9px;
+    border-radius: 4px;
+    background: #e6f1fa;
+    overflow: hidden;
+  }
+
+  .bar span {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: #33b8ff;
+    transition: width 3s cubic-bezier(0.3, 0.1, 0.3, 1);
+  }
+
+  .done .bar span {
+    background: #3cc06a;
+  }
+
+  .job-note {
+    font-size: 11px;
+    color: #707070;
+  }
+
+  /* New SQL Export */
+  .back {
+    font-size: 11.5px;
+    color: #1b7fd6;
+  }
+
+  .new-scroll .page-title {
+    margin-top: 6px;
+  }
+
+  .new-scroll .field-label {
+    display: block;
+    margin: 16px 0 5px;
+    font-size: 11px;
+    letter-spacing: 0;
+    color: #444;
+  }
+
+  .input.name {
+    width: 290px;
+  }
+
+  .section-title {
+    margin: 22px 0 10px;
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .count {
+    font-size: 11px;
+    color: #8a8a8a;
+  }
+
+  .seg {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid #e6e6e6;
+    border-radius: 8px;
+    background: #fff;
+    font-size: 11px;
+    color: #555;
+  }
+
+  .seg span {
+    padding: 3px 8px;
+    border-radius: 6px;
+  }
+
+  .seg .on {
+    background: #efefef;
+    color: #101010;
+  }
+
+  .subj .tr {
+    grid-template-columns: 34px 2fr 1.2fr 0.6fr;
+    height: 26px;
+  }
+
+  .tr.hover {
+    background: #eef8ff;
+  }
+
+  .tr.checked {
+    background: #e2f3fe;
+  }
+
+  .box {
+    display: grid;
+    place-items: center;
+    width: 13px;
+    height: 13px;
+    border: 1.5px solid #c4c4c4;
+    border-radius: 3px;
+    background: #fff;
+    transition:
+      background 0.15s ease,
+      border-color 0.15s ease,
+      transform 0.15s ease;
+  }
+
+  .checked .box,
+  .box.some {
+    border-color: #1b7fd6;
+    background: #1b7fd6;
+  }
+
+  .checked .box::after {
+    content: '';
+    width: 6px;
+    height: 3px;
+    margin-top: -2px;
+    border: solid #fff;
+    border-width: 0 0 1.6px 1.6px;
+    transform: rotate(-45deg);
+  }
+
+  .box.some::after {
+    content: '';
+    width: 7px;
+    height: 1.6px;
+    background: #fff;
+  }
+
+  .kind {
+    padding: 2px 7px;
+    border-radius: 5px;
+    background: #e2f3fe;
+    font-style: normal;
+    font-size: 9.5px;
+    color: #1b7fd6;
+  }
+
+  .selected {
+    padding: 9px 14px;
+    font-size: 10.5px;
+    color: #8a8a8a;
+  }
+
+  .narrow {
+    margin-top: 14px;
+  }
+
+  .narrow-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 14px;
+    padding: 0 14px 14px;
+  }
+
+  .new-scroll .narrow-grid .field-label {
+    margin-top: 10px;
+    font-size: 9.5px;
+    letter-spacing: 0.06em;
+    color: #8a8a8a;
+  }
+
+  .formats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .format {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid #e6e6e6;
+    border-radius: 10px;
+    background: #fff;
+    font-size: 10px;
+    color: #707070;
+  }
+
+  .format b {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-weight: 500;
+    font-size: 12px;
+    color: #101010;
+  }
+
+  .format.on {
+    border-color: #8fd0f5;
+    background: #eef8ff;
+  }
+
+  .radio {
+    width: 11px;
+    height: 11px;
+    border: 1.5px solid #c4c4c4;
+    border-radius: 50%;
+  }
+
+  .on .radio {
+    border: 3.5px solid #1b7fd6;
+  }
+
+  .advanced {
+    margin-top: 12px;
+    padding: 9px 14px;
+    border: 1px solid #ebebeb;
+    border-radius: 10px;
+    background: #fafafa;
+    font-size: 11.5px;
+  }
+
+  .start-row {
+    display: flex;
+    justify-content: flex-end;
+    margin: 14px 0 40px;
+  }
+
+  .spinner {
+    display: none;
+    width: 11px;
+    height: 11px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+
+  .busy {
+    filter: saturate(0.7) brightness(1.15);
+  }
+
+  .busy .spinner {
+    display: inline-block;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+</style>
