@@ -338,8 +338,11 @@ const rows = [
       demo.querySelector<HTMLElement>(sel)!.style.transform = `translateY(${-px}px)`;
     };
 
-    // The sidebar opens while the cursor is over it
-    const onMove = ({ pos }: DemoKit) => side.classList.toggle('expanded', pos.x < 56);
+    // The sidebar opens while the cursor is over it: 56px wide closed, 238px open
+    const onMove = ({ pos }: DemoKit) => {
+      const open = side.classList.contains('expanded');
+      side.classList.toggle('expanded', pos.x < (open ? 238 : 56));
+    };
 
     const reset = ({ $, pos }: DemoKit) => {
       show('views');
@@ -380,7 +383,8 @@ const rows = [
       await click(navExport, gen);
       setNav('exports');
       show('exports');
-      await moveTo({ x: 520, y: 260 }, 700, gen);
+      await sleep(350, gen);
+      await moveTo({ x: 520, y: 260 }, 900, gen);
       await sleep(500, gen);
 
       // 3. Start a new export
