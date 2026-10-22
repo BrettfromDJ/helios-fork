@@ -10,6 +10,7 @@ import GlowBackdrop from '../components/GlowBackdrop.astro';
 import ProductDemo from '../components/ProductDemo.astro';
 import SqlDemo from '../components/SqlDemo.astro';
 import VersionDemo from '../components/VersionDemo.astro';
+import TenantDemo from '../components/TenantDemo.astro';
 import { BOOK_CALL, GITHUB, LINKEDIN, DOCKER_COMMAND } from '../data/site';
 
 const GET_STARTED = `${GITHUB}#quick-start`;
@@ -168,10 +169,12 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
 
       <article class="card feature feature-tall lift-on-hover">
         <Orb class="feature-glow glow-security" />
-        <img class="feature-mockup mockup-security hover-lift" src="/figma/security-mockup.png" alt="" loading="lazy" />
         <div class="feature-copy">
           <h3>Security by standard.</h3>
           <p>SMART on FHIR authorization, BALP-compliant audit logging, and multi-tenancy.</p>
+        </div>
+        <div class="tenant-demo hover-lift">
+          <TenantDemo />
         </div>
       </article>
     </div>
@@ -540,10 +543,19 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
   }
 
-  .mockup-security {
+  /* Scripted tenant provisioning walkthrough: flush to the card's right
+     edge and running off the bottom, like the SQL-on-FHIR card */
+  .tenant-demo {
+    position: absolute;
     left: 36px;
     top: 129px;
-    width: 655px;
+    right: 0;
+    overflow: hidden;
+    border: 1px solid #e3e3e3;
+    border-right: 0;
+    border-radius: 14px 0 0 0;
+    background: #f5f5f5;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
   }
 
   .fhirpath-diagram {
@@ -1147,9 +1159,13 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
       min-height: 0;
     }
 
-    .mockup-security {
-      left: 28px;
-      top: 200px;
+    .tenant-demo {
+      position: relative;
+      left: auto;
+      top: auto;
+      margin-top: 24px;
+      border-right: 1px solid #e3e3e3;
+      border-radius: 12px;
     }
 
     .version-demo {
