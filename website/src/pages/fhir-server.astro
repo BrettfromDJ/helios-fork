@@ -11,6 +11,7 @@ import ProductDemo from '../components/ProductDemo.astro';
 import SqlDemo from '../components/SqlDemo.astro';
 import VersionDemo from '../components/VersionDemo.astro';
 import TenantDemo from '../components/TenantDemo.astro';
+import FhirpathDemo from '../components/FhirpathDemo.astro';
 import { BOOK_CALL, GITHUB, LINKEDIN, DOCKER_COMMAND } from '../data/site';
 
 const GET_STARTED = `${GITHUB}#quick-start`;
@@ -109,14 +110,9 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
           <h3>A complete FHIRPath engine.</h3>
           <p class="w-308">The full FHIRPath 3.0.0 specification, with more than 100 built-in functions.</p>
         </div>
-        <img
-          class="fhirpath-diagram hover-lift"
-          src="/figma/fhirpath-selection.png"
-          alt="A FHIRPath expression selecting the official given names from a Patient"
-          width="378"
-          height="210"
-          loading="lazy"
-        />
+        <div class="fhirpath-diagram hover-lift">
+          <FhirpathDemo />
+        </div>
       </article>
 
       <article class="card feature lift-on-hover">
@@ -563,8 +559,6 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     left: 20px;
     top: 123px;
     width: 378px;
-    height: 210px;
-    object-fit: cover;
   }
 
   /* Terminology rows fade out toward the bottom of the card */

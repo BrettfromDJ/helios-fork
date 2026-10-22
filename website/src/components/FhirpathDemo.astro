@@ -1,0 +1,487 @@
+---
+// Animated FHIRPath evaluation, built from real elements (no image). The
+// expression Patient.name.where(use = 'official').given is evaluated one
+// step at a time: each part lights up in the expression, the matching path
+// is drawn through the Patient tree, and the selected values land in the
+// result. Designed on a 1000x556 canvas and scaled to fit its container.
+
+// Tree nodes: [key, x, y, w, h, title, type, value]
+const nodes: [string, number, number, number, number, string, string, string?][] = [
+  ['patient', 222, 74, 156, 61, 'Patient', 'root'],
+  ['name1', 52, 184, 156, 67, 'name', 'HumanName'],
+  ['name2', 223, 184, 156, 67, 'name', 'HumanName'],
+  ['active', 394, 184, 156, 67, 'active', 'boolean', 'true'],
+  ['use', 36, 321, 119, 84, 'use', 'string', "'official'"],
+  ['family', 165, 321, 117, 84, 'family', 'string', "'Kramer'"],
+  ['given1', 293, 321, 119, 84, 'given', 'string', "'Wouter'"],
+  ['given2', 422, 321, 119, 84, 'given', 'string', "'Gert'"],
+];
+
+// Connectors: [key, path]. Every one is drawn grey; keyed ones also get a
+// blue copy that draws in when its step is reached.
+const links: [string, string][] = [
+  ['name1', 'M300 135 C300 162, 130 152, 130 184'],
+  ['name2', 'M300 135 L300 184'],
+  ['', 'M300 135 C300 158, 471 152, 471 184'],
+  ['use', 'M130 251 C130 285, 95 285, 95 321'],
+  ['', 'M130 251 C134 282, 224 276, 224 321'],
+  ['given1', 'M130 251 C140 286, 352 274, 352 321'],
+  ['given2', 'M130 251 C142 292, 481 268, 481 321'],
+];
+const ghosts = ['M300 251 L272 292', 'M300 251 L328 292', 'M471 251 L471 292'];
+---
+
+<div class="demo" data-demo="fhirpath">
+  <div class="canvas" aria-hidden="true" data-canvas>
+    <svg class="links" viewBox="0 0 1000 556" width="1000" height="556">
+      {ghosts.map((d) => <path d={d} class="ghost" />)}
+      {links.map(([, d]) => <path d={d} class="base" />)}
+      {links.filter(([k]) => k).map(([k, d]) => <path d={d} class:list={['lit', `l-${k}`]} pathLength="1" />)}
+      <path class="arrow" d="M548 361 H606 M598 352 L608 361 L598 370" />
+    </svg>
+
+    {
+      nodes.map(([key, x, y, w, h, title, type, value]) => (
+        <div class:list={['node', `n-${key}`]} style={`left:${x}px;top:${y}px;width:${w}px;height:${h}px`}>
+          <b>{title}</b>
+          <i>
+            {type}
+            {key === 'active' && <code> · true</code>}
+          </i>
+          {value && key !== 'active' && <code class="val">{value}</code>}
+        </div>
+      ))
+    }
+
+    <div class="legend">
+      <span><i class="solid"></i>path navigated</span>
+      <span><i class="dashed"></i>filter with where()</span>
+    </div>
+
+    <div class="panel">
+      <span class="label">EXPRESSION</span>
+      <pre class="code"><span class="tok t1">Patient</span><span class="tok t2">.name</span>
+  <span class="tok t3"><span class="fn">.where</span>(use =
+  <span class="str">'official'</span>)</span>
+  <span class="tok t4">.given</span></pre>
+      <span class="label result-label">RESULT</span>
+      <div class="chips">
+        <span class="chip"><small>0</small>'Wouter'</span>
+        <span class="chip"><small>1</small>'Gert'</span>
+      </div>
+      <p class="caption">An ordered collection of the selected elements.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Steps through the evaluation (see scripts/demo.ts for the loop).
+  import { setupDemo, type DemoKit } from '../scripts/demo';
+
+  const STEPS = 5;
+
+  for (const demo of document.querySelectorAll<HTMLElement>('[data-demo="fhirpath"]')) {
+    const canvas = demo.querySelector<HTMLElement>('[data-canvas]')!;
+
+    // Snap back to the start without playing every transition in reverse
+    const reset = () => {
+      canvas.classList.add('instant');
+      for (let i = 1; i <= STEPS; i++) canvas.classList.remove(`step-${i}`);
+      void canvas.offsetWidth;
+      canvas.classList.remove('instant');
+    };
+
+    const run = async ({ sleep }: DemoKit, gen: number) => {
+      await sleep(700, gen);
+      const holds = [1100, 1500, 1700, 1500, 3200];
+      for (let i = 1; i <= STEPS; i++) {
+        canvas.classList.add(`step-${i}`);
+        await sleep(holds[i - 1], gen);
+      }
+    };
+
+    setupDemo(demo, { width: 1000, reset, run });
+  }
+</script>
+
+<style>
+  .demo {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1000 / 556;
+    overflow: hidden;
+    font-family: var(--font-sans);
+    color: #101010;
+  }
+
+  .canvas {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 1000px;
+    height: 556px;
+    transform-origin: 0 0;
+    transition: opacity 0.6s ease;
+    --blue: #4aaef5;
+    --ease: cubic-bezier(0.45, 0, 0.2, 1);
+  }
+
+  .canvas.fade {
+    opacity: 0;
+  }
+
+  .instant,
+  .instant * {
+    transition: none !important;
+  }
+
+  code,
+  pre {
+    font-family: var(--font-mono);
+  }
+
+  /* ---------- Connectors ---------- */
+  .links {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+  }
+
+  .links path {
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  .ghost {
+    stroke: #e6e6e6;
+    stroke-dasharray: 4 6;
+  }
+
+  .base {
+    stroke: #e2e2e2;
+  }
+
+  /* Blue copies draw in from their start */
+  .lit {
+    stroke: var(--blue);
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition:
+      stroke-dashoffset 0.8s var(--ease),
+      opacity 0.4s ease;
+  }
+
+  .step-2 .l-name1,
+  .step-2 .l-name2,
+  .step-4 .l-given1,
+  .step-4 .l-given2 {
+    stroke-dashoffset: 0;
+  }
+
+  .step-4 .l-given2 {
+    transition-delay: 0.15s;
+  }
+
+  /* where() drops the second name */
+  .step-3 .l-name2 {
+    opacity: 0;
+  }
+
+  /* The where() filter is a dashed line, so it fades in instead */
+  .l-use {
+    stroke-dasharray: 7 7;
+    stroke-dashoffset: 0;
+    opacity: 0;
+  }
+
+  .step-3 .l-use {
+    opacity: 1;
+  }
+
+  .arrow {
+    stroke: var(--blue);
+    stroke-dasharray: 6 7;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .step-5 .arrow {
+    opacity: 1;
+    animation: march 0.9s linear infinite;
+  }
+
+  @keyframes march {
+    to {
+      stroke-dashoffset: -13;
+    }
+  }
+
+  /* ---------- Tree nodes ---------- */
+  .node {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.75);
+    text-align: center;
+    transition:
+      border-color 0.45s ease,
+      background 0.45s ease,
+      opacity 0.45s ease,
+      transform 0.45s var(--ease);
+  }
+
+  .node b {
+    font-weight: 600;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+  }
+
+  .node i {
+    font-size: 13.5px;
+    color: #707070;
+  }
+
+  .node i code {
+    font-style: normal;
+    color: #333;
+  }
+
+  .val {
+    font-size: 14px;
+    color: #555;
+  }
+
+  .step-1 .n-patient,
+  .step-2 :is(.n-name1, .n-name2) {
+    border-color: var(--blue);
+    background: #fff;
+  }
+
+  .step-3 .n-name2 {
+    border-color: transparent;
+    background: rgba(255, 255, 255, 0.75);
+    opacity: 0.55;
+  }
+
+  .step-3 .n-use {
+    border: 2px dashed var(--blue);
+    background: #fff;
+  }
+
+  .n-use .val,
+  .n-given1 .val,
+  .n-given2 .val {
+    transition: color 0.4s ease;
+  }
+
+  .step-3 .n-use .val,
+  .step-4 :is(.n-given1, .n-given2) .val {
+    color: #1b7fd6;
+  }
+
+  .step-4 :is(.n-given1, .n-given2) {
+    border-color: var(--blue);
+    background: #e3f2fd;
+    transform: translateY(-3px);
+  }
+
+  .step-4 .n-given2 {
+    transition-delay: 0.15s;
+  }
+
+  /* ---------- Legend ---------- */
+  .legend {
+    position: absolute;
+    left: 50px;
+    top: 458px;
+    display: flex;
+    gap: 22px;
+    font-size: 14px;
+    color: #707070;
+  }
+
+  .legend span {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .legend i {
+    width: 32px;
+    height: 0;
+    border-top: 3px solid var(--blue);
+  }
+
+  .legend .dashed {
+    width: 28px;
+    border-top-style: dashed;
+  }
+
+  /* ---------- Expression + result ---------- */
+  .panel {
+    position: absolute;
+    left: 620px;
+    top: 74px;
+    width: 322px;
+    height: 418px;
+    padding: 28px 26px;
+    border: 1px solid #ececec;
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
+  }
+
+  .label {
+    display: block;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: #707070;
+  }
+
+  .code {
+    margin: 16px 0 0;
+    padding: 16px 18px;
+    border-radius: 14px;
+    background: #f3f4f6;
+    font-size: 16.5px;
+    line-height: 29px;
+    white-space: pre;
+  }
+
+  /* Each part of the expression lights up as it's evaluated */
+  .tok {
+    border-radius: 5px;
+    color: #b9b9b9;
+    transition:
+      color 0.35s ease,
+      background 0.35s ease;
+  }
+
+  .tok .fn,
+  .tok .str {
+    color: inherit;
+    transition: color 0.35s ease;
+  }
+
+  .step-1 .t1,
+  .step-2 .t2,
+  .step-3 .t3,
+  .step-4 .t4 {
+    color: #101010;
+  }
+
+  .step-3 .t3 .fn,
+  .step-3 .t3 .str {
+    color: #1b7fd6;
+  }
+
+  .step-1:not(.step-2) .t1,
+  .step-2:not(.step-3) .t2,
+  .step-3:not(.step-4) .t3,
+  .step-4:not(.step-5) .t4 {
+    background: #dcefff;
+  }
+
+  .result-label {
+    margin-top: 36px;
+  }
+
+  .chips {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 16px;
+    border: 1.5px solid #9fd2f7;
+    border-radius: 24px;
+    background: #e9f5ff;
+    font-family: var(--font-mono);
+    font-size: 17px;
+    color: #1b7fd6;
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+    transition:
+      opacity 0.4s ease,
+      transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1.3);
+  }
+
+  .chip small {
+    font-size: 13px;
+    color: #707070;
+  }
+
+  .step-5 .chip {
+    opacity: 1;
+    transform: none;
+  }
+
+  .step-5 .chip + .chip {
+    transition-delay: 0.15s;
+  }
+
+  .caption {
+    margin-top: 18px;
+    font-size: 15px;
+    line-height: 23px;
+    color: #707070;
+    opacity: 0;
+    transition: opacity 0.5s ease 0.3s;
+  }
+
+  .step-5 .caption {
+    opacity: 1;
+  }
+
+  /* Reduced motion: show the finished evaluation */
+  @media (prefers-reduced-motion: reduce) {
+    .lit,
+    .l-use,
+    .arrow,
+    .chip,
+    .caption {
+      stroke-dashoffset: 0;
+      opacity: 1;
+      transform: none;
+    }
+
+    .l-name2 {
+      opacity: 0;
+    }
+
+    .n-patient,
+    .n-name1 {
+      border-color: var(--blue);
+      background: #fff;
+    }
+
+    .n-use {
+      border: 2px dashed var(--blue);
+      background: #fff;
+    }
+
+    .n-given1,
+    .n-given2 {
+      border-color: var(--blue);
+      background: #e3f2fd;
+    }
+
+    .t1,
+    .t2,
+    .t3,
+    .t4 {
+      color: #101010;
+    }
+  }
+</style>

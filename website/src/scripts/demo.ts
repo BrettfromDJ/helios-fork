@@ -1,6 +1,6 @@
 // Shared engine for the scripted product walkthroughs (ProductDemo, SqlDemo).
 // A demo is a fixed-size `.canvas` scaled to its container's width, with a
-// fake cursor (DemoCursor.astro) that a `run` script moves and clicks. The
+// fake cursor (DemoCursor.astro, optional) that a `run` script moves and clicks. The
 // script loops while the demo is on screen and is cancelled when it leaves.
 
 export type Pt = { x: number; y: number };
@@ -32,8 +32,8 @@ const ease = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 
 
 export function setupDemo(demo: HTMLElement, opts: Options) {
   const canvas = demo.querySelector<HTMLElement>('.canvas')!;
-  const cursor = demo.querySelector<HTMLElement>('[data-cursor]')!;
-  const ripple = demo.querySelector<HTMLElement>('[data-ripple]')!;
+  const cursor = demo.querySelector<HTMLElement>('[data-cursor]');
+  const ripple = demo.querySelector<HTMLElement>('[data-ripple]');
 
   let scale = 1;
   const fit = () => {
@@ -58,7 +58,7 @@ export function setupDemo(demo: HTMLElement, opts: Options) {
     },
     pos: { x: 0, y: 0 },
     place: () => {
-      cursor.style.transform = `translate(${kit.pos.x}px, ${kit.pos.y}px)`;
+      if (cursor) cursor.style.transform = `translate(${kit.pos.x}px, ${kit.pos.y}px)`;
       opts.onMove?.(kit);
     },
     sleep: (ms, gen) =>
@@ -79,13 +79,15 @@ export function setupDemo(demo: HTMLElement, opts: Options) {
         requestAnimationFrame(step);
       }),
     click: async (el, gen) => {
-      cursor.classList.add('down');
-      ripple.classList.remove('go');
-      void ripple.offsetWidth; // restart the animation
-      ripple.classList.add('go');
+      cursor?.classList.add('down');
+      if (ripple) {
+        ripple.classList.remove('go');
+        void ripple.offsetWidth; // restart the animation
+        ripple.classList.add('go');
+      }
       el?.classList.add('pressed');
       await kit.sleep(160, gen);
-      cursor.classList.remove('down');
+      cursor?.classList.remove('down');
       el?.classList.remove('pressed');
     },
   };
