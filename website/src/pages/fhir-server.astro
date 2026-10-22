@@ -31,7 +31,7 @@ const storage = [
   { src: '/figma/mongodb.svg', alt: 'MongoDB', w: 48, h: 48 },
 ];
 
-const resourceTypes = ['All resources', 'ActivityDefinition', 'AdverseEvent'];
+const resourceTypes = ['All Resources', 'ActivityDefinition', 'AdverseEvent'];
 
 // Order and position follow the design: the outer two tiles fade out.
 const subscriptionTiles = [
@@ -185,7 +185,7 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
         <div class="export-ui hover-lift" aria-hidden="true">
           <div class="export-options">
             <div class="export-option selected">
-              <span class="radio"></span>
+              <img class="radio-on" src="/figma/radio.svg" alt="" width="32" height="32" />
               <strong>Everything</strong>
               <span>The whole server - every resource type you select below.</span>
             </div>
@@ -671,19 +671,14 @@ const backends = ['SQLite', 'PostgresSQL', 'Elasticsearch', 'MongoDB', 'S3'];
     background: var(--white);
   }
 
-  .selected .radio {
-    border-color: var(--blue);
-  }
-
-  .selected .radio::after {
-    content: '';
+  /* The selected radio's artwork includes its drop shadow, so the 24px
+     circle sits 3.66px in from the image's left edge */
+  .radio-on {
     position: absolute;
-    left: 4px;
-    top: 4px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--blue);
+    left: 12.34px;
+    top: 16px;
+    width: 32px;
+    height: 32px;
   }
 
   .resource-panel {

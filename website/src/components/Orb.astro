@@ -1,6 +1,6 @@
 ---
-// The Helios orb, cropped from the logo sprite exactly as the Figma design does
-// (the sprite is shown at full height with the orb at its left edge).
+// The Helios orb, stretched to fill its box. Used blurred as the soft glow
+// behind feature cards; the caller sets position, size and blur.
 interface Props {
   class?: string;
 }
@@ -9,7 +9,7 @@ const { class: className } = Astro.props;
 ---
 
 <div class:list={['orb', className]} aria-hidden="true">
-  <img src="/figma/logo-sprite.png" alt="" />
+  <img src="/figma/orb.png" alt="" />
 </div>
 
 <style>
@@ -20,11 +20,8 @@ const { class: className } = Astro.props;
   }
 
   .orb img {
-    position: absolute;
-    top: 0;
-    left: 0;
+    width: 100%;
     height: 100%;
-    width: 394.56%;
     max-width: none;
   }
 </style>
